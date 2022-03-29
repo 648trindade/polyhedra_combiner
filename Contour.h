@@ -14,11 +14,10 @@
 class Contour
 {
 public:
-    struct EdgeInfo
-    {
-        Edge* edge;
-        bool direction;
-    };
-
     std::list<EdgeInfo> edges;
+
+    void add_edge(const EdgeInfo& edge);
+    void add_edge(const Edge* previous, const EdgeInfo& edge);
+
+    void merge(const Contour& other);
 };

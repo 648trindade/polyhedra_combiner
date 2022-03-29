@@ -14,9 +14,12 @@ target_link_libraries(
     polyhedra
 )
 
-add_executable(testVertex tests/testVertex.cpp)
-target_link_libraries(testVertex PRIVATE Catch2::Catch2WithMain polyhedra)
-
-#include(CTest)
 include(Catch)
-catch_discover_tests(testVertex)
+
+file(GLOB files "tests/*.cpp")
+foreach(file ${files})
+    get_filename_component(test_name ${file} NAME_WE)
+    add_executable(${test_name} ${file})
+    target_link_libraries(${test_name} PRIVATE Catch2::Catch2WithMain polyhedra)
+    catch_discover_tests(${test_name})
+endforeach()

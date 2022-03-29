@@ -12,5 +12,6 @@ class Solid
 
     Face& add_face();
     const Vertex* add_vertex(const Vertex& vertex);
-    const Edge* add_edge(const Vertex* begin, const Vertex* end);
+    EdgeInfo find_edge(const Vertex* begin, const Vertex* end);
+    EdgeInfo add_edge(const Vertex* begin, const Vertex* end);
 };

@@ -24,3 +24,5 @@ public:
     bool operator<(const Edge& other) const;
     bool operator==(const Edge& other) const;
 };
+
+typedef std::pair<const Edge*, bool> EdgeInfo;
