@@ -2,6 +2,8 @@
 
 #include "Contour.h"
 
+#include <iterator>
+
 /*!
  * A face specifies by one or more contours a set of finite two-dimensional patches in the same
  * plane. A normal and a distance from the origin define the plane in which the patches lie. Each
@@ -25,4 +27,5 @@ public:
 
     Contour& add_contour();
     void compute_plane_equation();
+    std::pair<Vertex, Vertex> intersect(const Face& other) const;
 };
