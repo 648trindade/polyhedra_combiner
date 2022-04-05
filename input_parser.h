@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vertex.h"
+#include "Solid.h"
 
 #include <filesystem>
 #include <string>
@@ -15,3 +15,5 @@ struct InputGeometry
 };
 
 std::vector<InputGeometry> read_input(const std::string& JSON_filename);
+
+Solid setup_geometry(const InputGeometry& geometry_info);

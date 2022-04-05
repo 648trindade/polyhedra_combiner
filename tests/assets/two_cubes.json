@@ -1,0 +1,9 @@
+[
+  {
+    "path": "tests/assets/cube.obj"
+  },
+  {
+    "path": "tests/assets/cube.obj",
+    "center": [1, 0, 0]
+  }
+]

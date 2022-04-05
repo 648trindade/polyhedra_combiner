@@ -39,3 +39,13 @@ EdgeInfo Solid::find_edge(const Vertex* begin, const Vertex* end)
     }
     return std::make_pair(nullptr, true);
 }
+
+BoundingBox Solid::bounding_box() const
+{
+    BoundingBox box{};
+    for (auto& vertex : this->vertexes)
+    {
+        box.update(vertex);
+    }
+    return box;
+}

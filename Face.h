@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BoundingBox.h"
 #include "Contour.h"
 
 #include <iterator>
@@ -28,4 +29,9 @@ public:
     Contour& add_contour();
     void compute_plane_equation();
     std::pair<Vertex, Vertex> intersect(const Face& other) const;
+
+    size_t get_number_of_vertexes() const;
+    const Vertex* get_vertex(size_t id);
+
+    BoundingBox bounding_box() const;
 };

@@ -42,7 +42,7 @@ TEST_CASE("Compute plane equation")
     REQUIRE(face.distance == 2);
 }
 
-TEST_CASE("Intersect faces")
+TEST_CASE("Intersect faces - origin")
 {
     const Vertex _vertexes[6] { { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 0 },
                                 { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
@@ -70,7 +70,20 @@ TEST_CASE("Intersect faces")
         REQUIRE(b.normal == Vertex { 1, 0, 0 });
         REQUIRE(b.distance == 0);
     }
-    auto [u, v] = b.intersect(a);
-    std::cout << "a " << v << std::endl;
-    std::cout << "b " << v + u << std::endl;
+    {
+        auto [u, v] = a.intersect(b);
+        REQUIRE(u.x == 0);
+        REQUIRE(u.y == 0);
+        REQUIRE(std::fabs(u.z) == 1);
+        REQUIRE(v.x == 0);
+        REQUIRE(v.y == 0);
+    }
+    {
+        auto [u, v] = b.intersect(a);
+        REQUIRE(u.x == 0);
+        REQUIRE(u.y == 0);
+        REQUIRE(std::fabs(u.z) == 1);
+        REQUIRE(v.x == 0);
+        REQUIRE(v.y == 0);
+    }
 }

@@ -5,13 +5,32 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(Catch2 REQUIRED)
 
-add_library(polyhedra Vertex.h Vertex.cpp Edge.cpp Edge.h Contour.cpp Contour.h Face.cpp Face.h Solid.cpp Solid.h)
+add_library(
+    polyhedra
+        Vertex.h
+        Vertex.cpp
+        Edge.cpp
+        Edge.h
+        Contour.cpp
+        Contour.h
+        Face.cpp
+        Face.h
+        Solid.cpp
+        Solid.h
+        intersection.cpp intersection.h BoundingBox.cpp BoundingBox.h)
 
-add_executable(polyhedra_combiner main.cpp input_parser.h input_parser.cpp)
-target_include_directories(polyhedra_combiner PRIVATE include)
+add_library(
+    utils
+        input_parser.h
+        input_parser.cpp
+)
+target_include_directories(utils PRIVATE include)
+
+add_executable(polyhedra_combiner main.cpp)
 target_link_libraries(
     polyhedra_combiner
-    polyhedra
+        polyhedra
+        utils
 )
 
 include(Catch)
@@ -20,6 +39,12 @@ file(GLOB files "tests/*.cpp")
 foreach(file ${files})
     get_filename_component(test_name ${file} NAME_WE)
     add_executable(${test_name} ${file})
-    target_link_libraries(${test_name} PRIVATE Catch2::Catch2WithMain polyhedra)
+    target_link_libraries(
+        ${test_name}
+        PRIVATE
+            Catch2::Catch2WithMain
+            polyhedra
+            utils
+    )
     catch_discover_tests(${test_name})
 endforeach()
