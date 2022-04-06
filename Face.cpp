@@ -80,3 +80,24 @@ BoundingBox Face::bounding_box() const
         this, [&box](const Vertex* vertex, size_t size) -> void { box.update(*vertex); });
     return box;
 }
+
+std::pair<bool, Vertex> Face::edge_plane_intersect(const Edge& edge) const
+{
+    const float start_distance = this->normal.dot(*edge.start);
+    const float end_distance = this->normal.dot(*edge.end);
+    if (std::fabs(end_distance - start_distance) < std::numeric_limits<float>::epsilon())
+    {
+        return std::make_pair(true, *edge.start);
+    }
+    else if ((start_distance <= this->distance) && (this->distance <= end_distance)
+        || (end_distance <= this->distance) && (this->distance <= start_distance))
+    {
+        const float fraction = (this->distance - start_distance) / (end_distance - start_distance);
+        Vertex point = *edge.start + (edge.get_direction() * fraction);
+        return std::make_pair(true, point);
+    }
+    else
+    {
+        return std::make_pair(false, Vertex{});
+    }
+}

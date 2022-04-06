@@ -17,20 +17,24 @@ add_library(
         Face.h
         Solid.cpp
         Solid.h
-        intersection.cpp intersection.h BoundingBox.cpp BoundingBox.h)
+        BoundingBox.cpp
+        BoundingBox.h
+)
 
 add_library(
     utils
         input_parser.h
         input_parser.cpp
+        intersection.cpp
+        intersection.h
 )
 target_include_directories(utils PRIVATE include)
 
 add_executable(polyhedra_combiner main.cpp)
 target_link_libraries(
     polyhedra_combiner
-        polyhedra
         utils
+        polyhedra
 )
 
 include(Catch)
@@ -43,8 +47,8 @@ foreach(file ${files})
         ${test_name}
         PRIVATE
             Catch2::Catch2WithMain
-            polyhedra
             utils
+            polyhedra
     )
     catch_discover_tests(${test_name})
 endforeach()

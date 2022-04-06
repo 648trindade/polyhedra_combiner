@@ -27,3 +27,26 @@ void Contour::merge(const Contour& other)
 {
 
 }
+
+bool Contour::overlap(const Vertex& point, const Vertex& normal) const
+{
+    for (const auto& [edge, reverse] : this->edges)
+    {
+        Vertex direction, point_to_edge;
+        if (!reverse)
+        {
+            direction = edge->get_normal();
+            point_to_edge = (point - *edge->start).normalize();
+        }
+        else
+        {
+            direction = -edge->get_normal();
+            point_to_edge = (point - *edge->end).normalize();
+        }
+        if (direction.cross(point_to_edge).dot(normal) > 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}

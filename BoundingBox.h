@@ -1,19 +1,22 @@
+#pragma once
+
 #include "Vertex.h"
 
 #include <limits>
 
-#pragma once
-
 class BoundingBox
 {
 public:
-    Vertex min { std::numeric_limits<float>::max(),
-                 std::numeric_limits<float>::max(),
-                 std::numeric_limits<float>::max() };
-    Vertex max { std::numeric_limits<float>::min(),
-                 std::numeric_limits<float>::min(),
-                 std::numeric_limits<float>::min() };
+    Vertex min { Vertex::limits::max(), Vertex::limits::max(), Vertex::limits::max() };
+    Vertex max { Vertex::limits::lowest(), Vertex::limits::lowest(), Vertex::limits::lowest() };
 
-    void update(Vertex vertex);
+    void update(const Vertex& vertex);
     bool overlap(const BoundingBox& other) const;
+    bool overlap(const Vertex& other) const;
+    BoundingBox merge(const BoundingBox& other) const;
+
+    float dx() const;
+    float dy() const;
+    float dz() const;
+    float volume() const;
 };

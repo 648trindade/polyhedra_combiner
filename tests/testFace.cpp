@@ -87,3 +87,33 @@ TEST_CASE("Intersect faces - origin")
         REQUIRE(v.y == 0);
     }
 }
+
+TEST_CASE("Intersect edge")
+{
+    Face face = create_face();
+    Vertex start {0.75, 0.75, 1};
+    Vertex end {0.75, 0.75, 3};
+    Edge edge { &start, &end };
+
+    face.compute_plane_equation();
+    {
+        auto [intersect, point] = face.edge_plane_intersect(edge);
+        REQUIRE(intersect);
+        REQUIRE(point == Vertex { 0.75, 0.75, 2 });
+    }
+    {
+        start.y = 1;
+        end.y = 0;
+        auto [intersect, point] = face.edge_plane_intersect(edge);
+        REQUIRE(intersect);
+        REQUIRE(point.x == 0.75);
+        REQUIRE(point.z == 2);
+        REQUIRE((end - point).normalize() == edge.get_normal());
+    }
+    {
+        end.z = 1.5;
+        auto [intersect, point] = face.edge_plane_intersect(edge);
+        REQUIRE_FALSE(intersect);
+        REQUIRE(point == Vertex {});
+    }
+}

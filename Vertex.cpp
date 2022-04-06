@@ -2,7 +2,6 @@
 
 #include "Edge.h"
 
-#include <cfloat>
 #include <cmath>
 
 Vertex Vertex::operator+(const Vertex& other) const
@@ -59,7 +58,7 @@ Vertex& Vertex::operator/=(const Vertex& other)
 
 inline bool is_close(float a, float b)
 {
-    return std::fabs(a - b) < FLT_EPSILON;
+    return std::fabs(a - b) < Vertex::limits::epsilon();
 }
 
 bool Vertex::operator<(const Vertex& other) const
@@ -72,6 +71,11 @@ bool Vertex::operator<(const Vertex& other) const
 bool Vertex::operator==(const Vertex& other) const
 {
     return is_close(this->x, other.x) && is_close(this->y, other.y) && is_close(this->z, other.z);
+}
+
+Vertex Vertex::operator-() const
+{
+    return Vertex { -this->x, -this->y, -this->z };
 }
 
 Vertex Vertex::operator+(const float value) const

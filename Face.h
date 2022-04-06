@@ -34,4 +34,6 @@ public:
     const Vertex* get_vertex(size_t id);
 
     BoundingBox bounding_box() const;
+
+    std::pair<bool, Vertex> edge_plane_intersect(const Edge& edge) const;
 };

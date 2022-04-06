@@ -112,3 +112,13 @@ TEST_CASE("Vertex cross")
     REQUIRE(a.cross(f) == Vertex{0, 1, 0});
     REQUIRE(a.cross(g) == Vertex{0, 0, SIN_45});
 }
+
+TEST_CASE("Vector angles")
+{
+    Vertex a { 0, 1, 0 };
+    Vertex normal { 0, 0, 1};
+    REQUIRE(a.cross(Vertex { 1, 1, 0 }).dot(normal) < 0); // right
+    REQUIRE(a.cross(Vertex { -1, 1, 0 }).dot(normal) > 0); // left
+    REQUIRE(a.cross(Vertex { 1, -1, 0 }).dot(normal) < 0); // right
+    REQUIRE(a.cross(Vertex { -1, -1, 0 }).dot(normal) > 0); // left
+}

@@ -20,4 +20,5 @@ public:
     void add_edge(const Edge* previous, const EdgeInfo& edge);
 
     void merge(const Contour& other);
+    bool overlap(const Vertex& point, const Vertex& normal) const;
 };

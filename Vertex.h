@@ -28,6 +28,7 @@ public:
 
     bool operator<(const Vertex& other) const;
     bool operator==(const Vertex& other) const;
+    Vertex operator-() const;
 
     Vertex operator+(float value) const;
     Vertex& operator+=(float value);
@@ -46,6 +47,8 @@ public:
     Vertex rotate(const float rotation_matrix[3][3]) const;
 
     friend std::ostream& operator<<(std::ostream& stream, const Vertex& v);
+
+    using limits = std::numeric_limits<float>;
 };
 
 std::ostream& operator<< (std::ostream& stream, const Vertex& v);
