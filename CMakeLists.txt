@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
-project(polyhedra_combiner)
+project(polyhedra_combiner LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(Catch2 REQUIRED)
+set(CMAKE_MODULE_PATH "${polyhedra_combiner_SOURCE_DIR}/cmake")
 
 add_library(
     polyhedra
@@ -37,18 +37,4 @@ target_link_libraries(
         polyhedra
 )
 
-include(Catch)
-
-file(GLOB files "tests/*.cpp")
-foreach(file ${files})
-    get_filename_component(test_name ${file} NAME_WE)
-    add_executable(${test_name} ${file})
-    target_link_libraries(
-        ${test_name}
-        PRIVATE
-            Catch2::Catch2WithMain
-            utils
-            polyhedra
-    )
-    catch_discover_tests(${test_name})
-endforeach()
+add_subdirectory(tests)

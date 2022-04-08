@@ -8,12 +8,18 @@
 std::vector<InputGeometry> read_input(const std::string& JSON_filename)
 {
     std::vector<InputGeometry> result;
-    std::ifstream file(JSON_filename);
     nlohmann::json json;
+
+    if (!std::filesystem::exists(JSON_filename))
+    {
+        throw std::runtime_error("JSON config file doesn't exist: " + JSON_filename);
+    }
 
     try
     {
+        std::ifstream file(JSON_filename);
         file >> json;
+        file.close();
     }
     catch (nlohmann::json::parse_error& error)
     {
