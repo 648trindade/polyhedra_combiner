@@ -4,6 +4,8 @@
 
 #include <list>
 
+class Face;
+
 /*!
  * A contour represents a single closed planar polygonal curve. Self-intersecting contours are not
  * allowed. A contour may assume one of two orientations; a component edge may be used in either
@@ -14,11 +16,14 @@
 class Contour
 {
 public:
+    Face* face;
     std::list<EdgeInfo> edges;
 
-    void add_edge(const EdgeInfo& edge);
+    void add_edge(const EdgeInfo& edge_info);
     void add_edge(const Edge* previous, const EdgeInfo& edge);
 
     void merge(const Contour& other);
-    bool overlap(const Vertex& point, const Vertex& normal) const;
+    bool overlap(const Vertex& point) const;
+    Vertex get_center() const;
+    bool is_convex() const;
 };

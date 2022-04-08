@@ -8,7 +8,7 @@
 
 Contour& Face::add_contour()
 {
-    this->contours.push_back(Contour{});
+    this->contours.push_back(Contour { this });
     return this->contours.back();
 }
 
@@ -37,18 +37,23 @@ template <typename Op>
 std::set<const Vertex*> iter_over_vertexes(const Face* face, Op op)
 {
     std::set<const Vertex*> vertexes;
-    bool inserted;
     for (auto& contour : face->contours)
     {
-        for (auto& edge_info : contour.edges)
+        for (auto& [edge, forward] : contour.edges)
         {
-            if (vertexes.insert(edge_info.first->start).second)
+            if (forward)
             {
-                op(edge_info.first->start, vertexes.size());
+                if (vertexes.insert(edge->start).second)
+                {
+                    op(edge->start, vertexes.size());
+                }
             }
-            if (vertexes.insert(edge_info.first->end).second)
+            else
             {
-                op(edge_info.first->end, vertexes.size());
+                if (vertexes.insert(edge->end).second)
+                {
+                    op(edge->end, vertexes.size());
+                }
             }
         }
     }
@@ -85,7 +90,9 @@ std::pair<bool, Vertex> Face::edge_plane_intersect(const Edge& edge) const
 {
     const float start_distance = this->normal.dot(*edge.start);
     const float end_distance = this->normal.dot(*edge.end);
-    if (std::fabs(end_distance - start_distance) < std::numeric_limits<float>::epsilon())
+
+    if (Vertex::is_close(end_distance, this->distance)
+        && Vertex::is_close(end_distance, start_distance))
     {
         return std::make_pair(true, *edge.start);
     }

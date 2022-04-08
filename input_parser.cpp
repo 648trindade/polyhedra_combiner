@@ -87,8 +87,6 @@ Solid setup_geometry(const InputGeometry& geometry_info)
     {
         throw std::runtime_error("Fail to load " + geometry_info.path.string());
     }
-    std::cout << loader.LoadedVertices.size() << " vertexes" << std::endl;
-    std::cout << loader.LoadedIndices.size() << " indexes" << std::endl;
 
     auto transform_vertex = [&geometry_info](Vertex& vertex)
     {
@@ -97,7 +95,8 @@ Solid setup_geometry(const InputGeometry& geometry_info)
         vertex += geometry_info.center;
     };
 
-    Solid solid{};
+    Solid solid {};
+    solid.name = geometry_info.path.stem();
     for (size_t i = 0; i < loader.LoadedIndices.size(); i += 3)
     {
         const Vertex* vertices[3];

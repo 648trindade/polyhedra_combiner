@@ -56,7 +56,7 @@ Vertex& Vertex::operator/=(const Vertex& other)
     return *this;
 }
 
-inline bool is_close(float a, float b)
+bool Vertex::is_close(float a, float b)
 {
     return std::fabs(a - b) < Vertex::limits::epsilon();
 }

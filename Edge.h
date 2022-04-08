@@ -21,6 +21,8 @@ public:
     Vertex get_normal() const;
     float get_length() const;
 
+    bool intersect(const Vertex& point) const;
+
     bool operator<(const Edge& other) const;
     bool operator==(const Edge& other) const;
 };

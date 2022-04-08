@@ -1,4 +1,5 @@
 #include "intersection.h"
+#include <iostream>
 
 void face_intersect(Face& face1, Face& face2);
 
@@ -56,12 +57,20 @@ void face_intersect(Face& face1, Face& face2)
             {
                 for (Contour& near_contour : face2.contours)
                 {
-                    if (near_contour.overlap(point, face2.normal))
+                    if (near_contour.overlap(point))
                     {
                         intersections.emplace_back(edge_info, point, &near_contour);
                     }
                 }
             }
         }
+    }
+    for (auto& [edge, point, contour] : intersections)
+    {
+        std::cout << "Edge " << *edge.first->start << " " << *edge.first->end << std::endl;
+        std::cout << "Point " << point << std::endl;
+        std::cout << "Plane " << contour->face->normal << " " << contour->face->distance
+                  << std::endl
+                  << std::endl;
     }
 }

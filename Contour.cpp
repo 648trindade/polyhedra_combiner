@@ -1,10 +1,13 @@
 #include "Contour.h"
 
-void Contour::add_edge(const EdgeInfo& edge)
+#include "Face.h"
+
+void Contour::add_edge(const EdgeInfo& edge_info)
 {
-    size_t position = this->edges.size();
-    this->edges.push_back(edge);
-    const_cast<Edge*>(edge.first)->contours.insert({this, position});
+    const size_t position = this->edges.size();
+    this->edges.push_back(edge_info);
+    Edge* edge = const_cast<Edge*>(edge_info.first);
+    edge->contours.insert({this, position});
 }
 
 void Contour::add_edge(const Edge* previous, const EdgeInfo& edge)
@@ -28,8 +31,9 @@ void Contour::merge(const Contour& other)
 
 }
 
-bool Contour::overlap(const Vertex& point, const Vertex& normal) const
+bool Contour::overlap(const Vertex& point) const
 {
+    const Vertex& face_normal = this->face->normal;
     for (const auto& [edge, reverse] : this->edges)
     {
         Vertex direction, point_to_edge;
@@ -43,10 +47,25 @@ bool Contour::overlap(const Vertex& point, const Vertex& normal) const
             direction = -edge->get_normal();
             point_to_edge = (point - *edge->end).normalize();
         }
-        if (direction.cross(point_to_edge).dot(normal) > 0)
+        if (direction.cross(point_to_edge).dot(face_normal) > 0)
         {
             return false;
         }
     }
     return true;
+}
+
+Vertex Contour::get_center() const
+{
+    Vertex center {};
+    for (auto& [edge, forward] : this->edges)
+    {
+        center += *edge->start;
+    }
+    return center / this->edges.size();
+}
+
+bool Contour::is_convex() const
+{
+    return this->overlap(this->get_center());
 }

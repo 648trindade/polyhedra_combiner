@@ -7,6 +7,11 @@
 class Solid
 {
 public:
+    Solid();
+    Solid(const std::string& name);
+    Solid(Solid&& other);
+
+    std::string name;
     std::vector<Face> faces;
     std::set<Vertex> vertexes;
     std::set<Edge> edges;
@@ -17,4 +22,6 @@ public:
 
     const Vertex* add_vertex(const Vertex& vertex);
     BoundingBox bounding_box() const;
+
+    void to_OBJ(const std::string filename) const;
 };
