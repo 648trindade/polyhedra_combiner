@@ -18,12 +18,14 @@ jobs:
 
     - name: Build
       run: |
+        export TERM=xterm-color
         mkdir build && cd build
         cmake -DCMAKE_CXX_COMPILER=clang++ ../
         cmake --build . -- -j
 
     - name: Test
       run: |
+        export TERM=xterm-color
         for test in build/tests/test*.run
         do
           ./${test} -d yes
