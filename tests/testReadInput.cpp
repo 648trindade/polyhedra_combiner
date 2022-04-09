@@ -41,5 +41,6 @@ TEST_CASE("Two cubes")
                 REQUIRE(a == b);
             }
         }
+        solid.to_OBJ("/tmp/" + solid.name + ".obj");
     }
 }

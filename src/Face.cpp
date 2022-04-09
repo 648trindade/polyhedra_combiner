@@ -11,6 +11,13 @@ Face::Face(std::vector<Vertex>& vertices)
     this->compute_plane_equation();
 }
 
+Face::Face(Face& other)
+    : vertices(other.vertices)
+    , normal(other.normal)
+    , distance(other.distance)
+{
+}
+
 Face::Face(Face&& other)
     : vertices(std::move(other.vertices))
     , normal(other.normal)
@@ -97,11 +104,26 @@ bool Face::intersect(const Vertex& point) const
     for (int i = 0; i < this->get_number_of_edges(); i++)
     {
         const Edge edge = this->get_edge(i);
+        if (point == edge.start || point == edge.end) // point on edge extremes
+        {
+            return true;
+        }
+
         const Vertex direction = edge.get_normal();
-        const Vertex point_to_edge = (point - edge.start).normalize();
-        const Vertex triangle_normal = direction.cross(point_to_edge);
-        const bool at_left = numeric::is_great(triangle_normal.dot(this->normal), 0);
-        if (at_left)
+        const Vertex point_to_edge = point - edge.start;
+        const float dot = direction.dot(point_to_edge.normalize());
+        if (numeric::is_close(dot, 1)) // point is aligned with edge
+        {
+            return numeric::is_less_or_close(point_to_edge.norm(), edge.get_length());
+        }
+        else if (numeric::is_close(dot, -1)) // point aligned with edge in opposite direction
+        {
+            return false;
+        }
+
+        const Vertex pair_normal = direction.cross(point_to_edge).normalize();
+        const bool at_right = numeric::is_close(this->normal.dot(pair_normal), 1);
+        if (!at_right) // if at left of edge, then it is outside of face
         {
             return false;
         }
@@ -122,4 +144,30 @@ Vertex Face::get_center() const
 bool Face::is_convex() const
 {
     return this->intersect(this->get_center());
+}
+
+Face Face::split(int first_edge, Vertex first_point, int second_edge, Vertex second_point)
+{
+    auto aligned = [this](int edge, const Vertex& point) -> bool {
+        return numeric::is_close(
+            this->get_edge(edge).get_normal().dot((point - this->vertices[edge]).normalize()), 1);
+    };
+    if (!aligned(first_edge, first_point) || !aligned(second_edge, second_point))
+    {
+        throw std::runtime_error("Point outside edge on face split");
+    }
+
+    std::vector<Vertex> removed;
+    auto previous_vertex = this->vertices.begin() + first_edge;
+    auto first_vertex = previous_vertex + 1;
+    auto second_vertex = this->vertices.begin() + second_edge + 1;
+
+    removed.push_back(first_point);
+    removed.insert(removed.end(), first_vertex, second_vertex);
+    removed.push_back(second_point);
+
+    this->vertices.erase(first_vertex, second_vertex);
+    this->vertices.insert(previous_vertex + 1, { first_point, second_point });
+
+    return Face(removed);
 }

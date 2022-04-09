@@ -55,7 +55,7 @@ std::vector<InputGeometry> read_input(const std::string& JSON_filename)
         }
         if (entry.contains("quaternion"))
         {
-            auto json_quaternion = entry["center"];
+            auto json_quaternion = entry["quaternion"];
             const float q[4] = {
                 json_quaternion[0].get<float>(), // scalar
                 json_quaternion[1].get<float>(),
@@ -91,12 +91,12 @@ Solid setup_geometry(const InputGeometry& geometry_info)
     auto transform_vertex = [&geometry_info](Vertex& vertex)
     {
         vertex *= geometry_info.scale;
-        vertex.rotate(geometry_info.rotation_matrix);
+        vertex = vertex.rotate(geometry_info.rotation_matrix);
         vertex += geometry_info.center;
     };
 
     Solid solid {};
-    solid.name = geometry_info.path.stem();
+    solid.name = loader.LoadedMeshes[0].MeshName;
     for (size_t i = 0; i < loader.LoadedIndices.size(); i += 3)
     {
         std::vector<Vertex> vertices(3);

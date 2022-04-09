@@ -24,9 +24,10 @@ public:
     Vertex normal;
     float distance;
 
-    Face () = default;
-    Face (std::vector<Vertex>& vertices);
-    Face (Face&& other);
+    Face() = default;
+    Face(std::vector<Vertex>& vertices);
+    Face(Face& other);
+    Face(Face&& other);
 
     void add_vertex(const Vertex& vertex);
 
@@ -43,4 +44,6 @@ public:
     bool intersect(const Vertex& point) const;
     Vertex get_center() const;
     bool is_convex() const;
+
+    Face split(int first_edge, Vertex first_point, int second_edge, Vertex second_point);
 };

@@ -6,7 +6,7 @@
 
 Face create_face()
 {
-    std::vector<Vertex> vertexes { { 1, 0, 2 }, { 1, 1, 2 }, { 0, 1, 2 } };
+    std::vector<Vertex> vertexes { { 0, 1, 2 }, { 1, 1, 2 }, { 1, 0, 2 } };
     return { vertexes };
 }
 
@@ -22,7 +22,7 @@ TEST_CASE("Compute plane equation")
 {
     Face face = create_face();
     face.compute_plane_equation();
-    REQUIRE(face.normal == Vertex { 0, 0, 1 });
+    REQUIRE(face.normal == Vertex { 0, 0, -1 });
     REQUIRE(face.distance == 2);
 }
 
@@ -92,4 +92,35 @@ TEST_CASE("Intersect edge")
         REQUIRE_FALSE(intersect);
         REQUIRE(point == Vertex {});
     }
+}
+
+TEST_CASE("Intersect Point")
+{
+    Face face { create_face() };
+    REQUIRE(face.intersect(Vertex { 0.75, 0.75, 2 })); // inside
+    REQUIRE_FALSE(face.intersect(Vertex { 0, 0, 2 })); // origin
+    REQUIRE_FALSE(face.intersect(Vertex { 1 + numeric::epsilon(), 1, 2 })); // edge +
+    REQUIRE_FALSE(face.intersect(Vertex { 0 - numeric::epsilon(), 1, 2 })); // edge -
+    REQUIRE(face.intersect(Vertex { 0, 1, 2 })); // edge start
+    REQUIRE_FALSE(face.intersect(Vertex { 0.75, 0.75, 0 })); // below
+    REQUIRE_FALSE(face.intersect(Vertex { 0.75, 0.75, 3 })); // above
+}
+
+TEST_CASE("Face Split")
+{
+    Face face { create_face() };
+    Face backup = face;
+    Vertex a { (face.vertices[0] + face.vertices[1]) / 2 };
+    Vertex b { (face.vertices[1] + face.vertices[2]) / 2 };
+    Face new_face { face.split(0, a, 1, b) };
+    REQUIRE(face.get_number_of_vertices() == 4);
+    REQUIRE(face.vertices[0] == backup.vertices[0]);
+    REQUIRE(face.vertices[1] == a);
+    REQUIRE(face.vertices[2] == b);
+    REQUIRE(face.vertices[3] == backup.vertices[2]);
+    REQUIRE(new_face.get_number_of_vertices() == 3);
+    REQUIRE(new_face.vertices[0] == a);
+    REQUIRE(new_face.vertices[1] == backup.vertices[1]);
+    REQUIRE(new_face.vertices[2] == b);
+    REQUIRE_THROWS(backup.split(0, Vertex {}, 1, Vertex {}));
 }

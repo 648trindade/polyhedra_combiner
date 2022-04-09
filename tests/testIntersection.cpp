@@ -5,7 +5,11 @@
 #include "intersection.h"
 
 // Forward declarations
-void face_intersect(Face& face1, Face& face2);
+template <typename Object1, typename Object2>
+bool intersect(Object1& home_object, Object2& near_object);
+
+template<>
+bool intersect(Face& home_face, Face& near_face);
 
 TEST_CASE("Face Intersect")
 {
@@ -23,5 +27,5 @@ TEST_CASE("Face Intersect")
     b.add_vertex(vertexes[5]);
     b.compute_plane_equation();
 
-    face_intersect(a, b);
+    intersect(a, b);
 }

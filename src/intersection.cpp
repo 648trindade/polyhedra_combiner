@@ -2,33 +2,58 @@
 #include <iostream>
 #include <tuple>
 
-void face_intersect(Face& face1, Face& face2);
+void face_intersect(Face& home_face, Face& near_face);
 
 template <typename Object1, typename Object2>
-bool intersect(Object1& object1, Object2& object2)
+bool intersect(Object1& home_object, Object2& near_object)
 {
-    if (!object1.bounding_box().overlap(object2.bounding_box()))
+    if (!home_object.bounding_box().overlap(near_object.bounding_box()))
     {
         return false;
     }
 
-    if constexpr (std::is_same<Object1, Face>::value && std::is_same<Object2, Face>::value)
+    if constexpr (std::is_same<Object1, Solid>::value)
     {
-        face_intersect(object1, object2);
-    }
-    else if constexpr (std::is_same<Object1, Solid>::value)
-    {
-        for (Face& face : object1.faces)
+        for (auto face = home_object.faces.begin(); face != home_object.faces.end(); face++)
         {
-            intersect(face, object2);
+            intersect(*face, near_object);
+        }
+    }
+    else if constexpr (std::is_same<Object2, Solid>::value)
+    {
+        for (auto face = near_object.faces.begin(); face != near_object.faces.end(); face++)
+        {
+            intersect(home_object, *face);
         }
     }
     else
     {
-        for (Face& face : object2.faces)
+        intersect(home_object, near_object);
+    }
+    return true;
+}
+
+template<>
+bool intersect(Face& home_face, Face& near_face)
+{
+    using Intersection = std::tuple<int, Vertex>;
+    std::vector<Intersection> intersections;
+
+    for (int i = 0; i < home_face.get_number_of_edges(); i++)
+    {
+        const Edge home_edge = home_face.get_edge(i);
+        auto [edge_intersect, point] = near_face.intersect(home_edge);
+        if (edge_intersect && near_face.intersect(point))
         {
-            intersect(object1, face);
+            intersections.emplace_back(std::make_tuple(i, point));
         }
+    }
+    for (auto& [i, point] : intersections)
+    {
+        Edge edge = home_face.get_edge(i);
+        std::cout << "Edge " << edge.start << " " << edge.end << std::endl;
+        std::cout << "Point " << point << std::endl;
+        std::cout << "Plane " << near_face.normal << " " << near_face.distance << std::endl << std::endl;
     }
     return true;
 }
@@ -41,28 +66,5 @@ void remove_intersect(std::vector<Solid>& solids)
         {
             intersect(solids[i], solids[j]);
         }
-    }
-}
-
-void face_intersect(Face& face1, Face& face2)
-{
-    using Intersection = std::tuple<int, Vertex>;
-    std::vector<Intersection> intersections;
-
-    for (int i = 0; i < face1.get_number_of_edges(); i++)
-    {
-        const Edge home_edge = face1.get_edge(i);
-        auto [edge_intersect, point] = face2.intersect(home_edge);
-        if (edge_intersect && face2.intersect(point))
-        {
-            intersections.emplace_back(std::make_tuple(i, point));
-        }
-    }
-    for (auto& [i, point] : intersections)
-    {
-        Edge edge = face1.get_edge(i);
-        std::cout << "Edge " << edge.start << " " << edge.end << std::endl;
-        std::cout << "Point " << point << std::endl;
-        std::cout << "Plane " << face2.normal << " " << face2.distance << std::endl << std::endl;
     }
 }
