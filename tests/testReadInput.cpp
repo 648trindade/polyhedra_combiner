@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_CONSOLE_WIDTH 120
 #include <catch2/catch.hpp>
 
-#include "../input_parser.h"
+#include "input_parser.h"
 
 #include <iostream>
 

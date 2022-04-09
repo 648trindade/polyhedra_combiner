@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_CONSOLE_WIDTH 120
 #include <catch2/catch.hpp>
 
-#include "../BoundingBox.h"
+#include "BoundingBox.h"
 
 TEST_CASE("Empty Bounding Box")
 {

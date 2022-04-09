@@ -2,7 +2,7 @@
 
 #include "json.hpp"
 
-#include <OBJ_Loader.h>
+#include "OBJ_Loader.h"
 #include <fstream>
 
 std::vector<InputGeometry> read_input(const std::string& JSON_filename)

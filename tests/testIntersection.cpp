@@ -2,8 +2,7 @@
 #define CATCH_CONFIG_CONSOLE_WIDTH 120
 #include <catch2/catch.hpp>
 
-#include "../input_parser.h"
-#include "../intersection.h"
+#include "intersection.h"
 
 // Forward declarations
 void face_intersect(Face& face1, Face& face2);
