@@ -46,3 +46,28 @@ bool Edge::intersect(const Vertex& point) const
         return numeric::is_less_or_close(distance, length);
     }
 }
+
+std::pair<bool, Vertex> Edge::intersect(const Edge& other, bool are_coplanar) const
+{
+    const Vertex normal = this->get_normal();
+    const Vertex other_normal = other.get_normal();
+    const Vertex to_start = other.start - this->start;
+    const Vertex to_end = other.end - this->start;
+
+    auto normal_cross = [&normal](const Vertex& a) -> Vertex
+    {
+        return normal.cross(a).normalize();
+    };
+
+    if (!are_coplanar
+        && !numeric::is_close(normal_cross(to_start).abs_dot(normal_cross(to_end)), 1))
+    {
+        return { false, Vertex {} };
+    }
+    if (numeric::is_close(normal.abs_dot(other_normal), 1))
+    {
+        const float length = this->get_length();
+    }
+
+    return std::make_pair<bool, Vertex>(0, {});
+}

@@ -35,7 +35,7 @@ void Face::compute_plane_equation()
     const Vertex& a = this->vertices[0];
     const Vertex& b = this->vertices[1];
     const Vertex& c = this->vertices[2];
-    this->normal = (b - a).cross(c - a).normalize();
+    this->normal = a.cross(b, c).normalize();
     this->distance = this->normal.dot(a);
 }
 

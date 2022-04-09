@@ -42,6 +42,9 @@ public:
     Vertex normalize() const;
     Vertex rotate(const float rotation_matrix[3][3]) const;
 
+    float abs_dot(const Vertex& other) const;
+    Vertex cross(const Vertex& other, const Vertex& another) const;
+
     friend std::ostream& operator<<(std::ostream& stream, const Vertex& v);
 };
 

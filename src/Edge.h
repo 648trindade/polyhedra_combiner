@@ -17,6 +17,7 @@ public:
     float get_length() const;
 
     bool intersect(const Vertex& point) const;
+    std::pair<bool, Vertex> intersect(const Edge& edge, bool are_coplanar = true) const;
 
     bool operator==(const Edge& other) const;
 };

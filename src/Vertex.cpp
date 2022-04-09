@@ -137,6 +137,11 @@ float Vertex::dot(const Vertex& other) const
     return this->x * other.x + this->y * other.y + this->z * other.z;
 }
 
+float Vertex::abs_dot(const Vertex& other) const
+{
+    return std::fabs(this->dot(other));
+}
+
 Vertex Vertex::cross(const Vertex& other) const
 {
     return Vertex {
@@ -154,6 +159,11 @@ float Vertex::norm() const
 Vertex Vertex::normalize() const
 {
     return *this / this->norm();
+}
+
+Vertex Vertex::cross(const Vertex& other, const Vertex& another) const
+{
+    return (other - *this).cross(another - *this);
 }
 
 Vertex Vertex::rotate(const float (*rotation_matrix)[3]) const

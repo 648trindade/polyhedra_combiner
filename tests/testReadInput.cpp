@@ -29,7 +29,7 @@ TEST_CASE("Two cubes")
                 auto a = face.vertices[0];
                 auto b = face.vertices[1];
                 auto c = face.vertices[2];
-                REQUIRE(face.normal == (b - a).cross(c - a).normalize());
+                REQUIRE(face.normal == a.cross(b, c).normalize());
             }
 
             // check closed contours
