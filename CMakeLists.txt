@@ -11,15 +11,13 @@ add_library(
         Vertex.cpp
         Edge.cpp
         Edge.h
-        Contour.cpp
-        Contour.h
         Face.cpp
         Face.h
         Solid.cpp
         Solid.h
         BoundingBox.cpp
         BoundingBox.h
-)
+        numeric.h)
 
 add_library(
     utils

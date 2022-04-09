@@ -1,24 +1,33 @@
 #include "Face.h"
 
-#include <iostream>
+#include "numeric.h"
 
-#include <cfloat>
 #include <cmath>
 #include <set>
 
-Contour& Face::add_contour()
+Face::Face(std::vector<Vertex>& vertices)
+    : vertices(std::move(vertices))
 {
-    this->contours.push_back(Contour { this });
-    return this->contours.back();
+    this->compute_plane_equation();
+}
+
+Face::Face(Face&& other)
+    : vertices(std::move(other.vertices))
+    , normal(other.normal)
+    , distance(other.distance)
+{
+}
+
+void Face::add_vertex(const Vertex& vertex)
+{
+    this->vertices.push_back(vertex);
 }
 
 void Face::compute_plane_equation()
 {
-    Contour& first_contour = this->contours.front();
-    auto iterator = first_contour.edges.begin();
-    const Vertex& a = *this->get_vertex(0);
-    const Vertex& b = *this->get_vertex(1);
-    const Vertex& c = *this->get_vertex(2);
+    const Vertex& a = this->vertices[0];
+    const Vertex& b = this->vertices[1];
+    const Vertex& c = this->vertices[2];
     this->normal = (b - a).cross(c - a).normalize();
     this->distance = this->normal.dot(a);
 }
@@ -33,78 +42,84 @@ std::pair<Vertex, Vertex> Face::intersect(const Face& other) const
     return std::make_pair(u, v);
 }
 
-template <typename Op>
-std::set<const Vertex*> iter_over_vertexes(const Face* face, Op op)
+size_t Face::get_number_of_vertices() const
 {
-    std::set<const Vertex*> vertexes;
-    for (auto& contour : face->contours)
-    {
-        for (auto& [edge, forward] : contour.edges)
-        {
-            if (forward)
-            {
-                if (vertexes.insert(edge->start).second)
-                {
-                    op(edge->start, vertexes.size());
-                }
-            }
-            else
-            {
-                if (vertexes.insert(edge->end).second)
-                {
-                    op(edge->end, vertexes.size());
-                }
-            }
-        }
-    }
-    return vertexes;
+    return this->vertices.size();
 }
 
-size_t Face::get_number_of_vertexes() const
+size_t Face::get_number_of_edges() const
 {
-    std::set<const Vertex*> vertexes { iter_over_vertexes(this, [](auto a, auto b) {}) };
-    return vertexes.size();
+    return (this->vertices.size() > 1) ? this->vertices.size() : 0;
 }
 
-const Vertex* Face::get_vertex(size_t id)
+Edge Face::get_edge(size_t id) const
 {
-    const Vertex* result = nullptr;
-    iter_over_vertexes(this, [&result, id](const Vertex* vertex, size_t size) -> void {
-        if (size == id + 1)
-        {
-            result = vertex;
-        }
-    });
-    return result;
+    const size_t next_id = (id + 1) % this->vertices.size();
+    return Edge { this->vertices[id], this->vertices[next_id] };
 }
 
 BoundingBox Face::bounding_box() const
 {
-    BoundingBox box{};
-    iter_over_vertexes(
-        this, [&box](const Vertex* vertex, size_t size) -> void { box.update(*vertex); });
+    BoundingBox box {};
+    for (auto& vertex : this->vertices)
+    {
+        box.update(vertex);
+    }
     return box;
 }
 
-std::pair<bool, Vertex> Face::edge_plane_intersect(const Edge& edge) const
+std::pair<bool, Vertex> Face::intersect(const Edge& edge) const
 {
-    const float start_distance = this->normal.dot(*edge.start);
-    const float end_distance = this->normal.dot(*edge.end);
+    const float start_distance = this->normal.dot(edge.start);
+    const float end_distance = this->normal.dot(edge.end);
 
-    if (Vertex::is_close(end_distance, this->distance)
-        && Vertex::is_close(end_distance, start_distance))
+    if (numeric::is_close(end_distance, this->distance)
+        && numeric::is_close(end_distance, start_distance))
     {
-        return std::make_pair(true, *edge.start);
+        return std::make_pair(true, edge.start);
     }
-    else if ((start_distance <= this->distance) && (this->distance <= end_distance)
+    else if (
+        (start_distance <= this->distance) && (this->distance <= end_distance)
         || (end_distance <= this->distance) && (this->distance <= start_distance))
     {
         const float fraction = (this->distance - start_distance) / (end_distance - start_distance);
-        Vertex point = *edge.start + (edge.get_direction() * fraction);
+        Vertex point = edge.start + (edge.get_direction() * fraction);
         return std::make_pair(true, point);
     }
     else
     {
-        return std::make_pair(false, Vertex{});
+        return std::make_pair(false, Vertex {});
     }
+}
+
+bool Face::intersect(const Vertex& point) const
+{
+    for (int i = 0; i < this->get_number_of_edges(); i++)
+    {
+        const Edge edge = this->get_edge(i);
+        const Vertex direction = edge.get_normal();
+        const Vertex point_to_edge = (point - edge.start).normalize();
+        const Vertex triangle_normal = direction.cross(point_to_edge);
+        const bool at_left = numeric::is_great(triangle_normal.dot(this->normal), 0);
+        if (at_left)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+Vertex Face::get_center() const
+{
+    Vertex center {};
+    for (auto& vertex : this->vertices)
+    {
+        center += vertex;
+    }
+    return center / this->get_number_of_vertices();
+}
+
+bool Face::is_convex() const
+{
+    return this->intersect(this->get_center());
 }

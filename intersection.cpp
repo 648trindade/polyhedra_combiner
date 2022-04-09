@@ -1,5 +1,6 @@
 #include "intersection.h"
 #include <iostream>
+#include <tuple>
 
 void face_intersect(Face& face1, Face& face2);
 
@@ -45,32 +46,23 @@ void remove_intersect(std::vector<Solid>& solids)
 
 void face_intersect(Face& face1, Face& face2)
 {
-    using Intersection = std::tuple<EdgeInfo, Vertex, Contour*>;
+    using Intersection = std::tuple<int, Vertex>;
     std::vector<Intersection> intersections;
 
-    for (const Contour& home_contour : face1.contours)
+    for (int i = 0; i < face1.get_number_of_edges(); i++)
     {
-        for (const EdgeInfo& edge_info : home_contour.edges)
+        const Edge home_edge = face1.get_edge(i);
+        auto [edge_intersect, point] = face2.intersect(home_edge);
+        if (edge_intersect && face2.intersect(point))
         {
-            auto [edge_intersect, point] = face2.edge_plane_intersect(*edge_info.first);
-            if (edge_intersect)
-            {
-                for (Contour& near_contour : face2.contours)
-                {
-                    if (near_contour.overlap(point))
-                    {
-                        intersections.emplace_back(edge_info, point, &near_contour);
-                    }
-                }
-            }
+            intersections.emplace_back(std::make_tuple(i, point));
         }
     }
-    for (auto& [edge, point, contour] : intersections)
+    for (auto& [i, point] : intersections)
     {
-        std::cout << "Edge " << *edge.first->start << " " << *edge.first->end << std::endl;
+        Edge edge = face1.get_edge(i);
+        std::cout << "Edge " << edge.start << " " << edge.end << std::endl;
         std::cout << "Point " << point << std::endl;
-        std::cout << "Plane " << contour->face->normal << " " << contour->face->distance
-                  << std::endl
-                  << std::endl;
+        std::cout << "Plane " << face2.normal << " " << face2.distance << std::endl << std::endl;
     }
 }

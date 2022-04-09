@@ -99,21 +99,16 @@ Solid setup_geometry(const InputGeometry& geometry_info)
     solid.name = geometry_info.path.stem();
     for (size_t i = 0; i < loader.LoadedIndices.size(); i += 3)
     {
-        const Vertex* vertices[3];
-        Face& face = solid.add_face();
-        Contour& contour = face.add_contour();
+        std::vector<Vertex> vertices(3);
         for (int v = 0; v < 3; v++)
         {
-            int index = loader.LoadedIndices[i + v];
+            auto index = loader.LoadedIndices[i + v];
             auto& position = loader.LoadedVertices[index].Position;
             Vertex vertex { position.X, position.Y, position.Z };
             transform_vertex(vertex);
-            vertices[v] = solid.add_vertex(vertex);
+            vertices[v] = vertex;
         }
-        contour.add_edge(solid.add_edge(vertices[0], vertices[1]));
-        contour.add_edge(solid.add_edge(vertices[1], vertices[2]));
-        contour.add_edge(solid.add_edge(vertices[2], vertices[0]));
-        face.compute_plane_equation();
+        solid.add_face(vertices);
     }
     return solid;
 }

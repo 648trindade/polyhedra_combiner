@@ -1,11 +1,10 @@
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #define CATCH_CONFIG_CONSOLE_WIDTH 120
 #include <catch2/catch.hpp>
 
 #include "../Vertex.h"
 
 #include <cfloat>
-#include <sstream>
 #include <string>
 
 const float SIN_45 { float(std::sin(M_PI / 4.f)) };
@@ -90,7 +89,7 @@ TEST_CASE("Vertex dot")
     Vertex a { 1, 0, 0 };
     Vertex b { -1, 0, 0 };
     Vertex c { 0, 1, 0 };
-    Vertex d = Vertex{ 1, 1, 0 }.normalize();
+    Vertex d = Vertex { 1, 1, 0 }.normalize();
     REQUIRE(a.dot() == 1);
     REQUIRE(a.dot(b) == -1);
     REQUIRE(a.dot(c) == 0);
@@ -105,22 +104,22 @@ TEST_CASE("Vertex cross")
     Vertex d { 0, -1, 0 };
     Vertex e { 0, 0, 1 };
     Vertex f { 0, 0, -1 };
-    Vertex g = Vertex{ 1, 1, 0 }.normalize();
-    REQUIRE(a.cross(a) == Vertex{0, 0, 0});
-    REQUIRE(a.cross(b) == Vertex{0, 0, 0});
-    REQUIRE(a.cross(c) == Vertex{0, 0, 1});
-    REQUIRE(a.cross(d) == Vertex{0, 0, -1});
-    REQUIRE(a.cross(e) == Vertex{0, -1, 0});
-    REQUIRE(a.cross(f) == Vertex{0, 1, 0});
-    REQUIRE(a.cross(g) == Vertex{0, 0, SIN_45});
+    Vertex g = Vertex { 1, 1, 0 }.normalize();
+    REQUIRE(a.cross(a) == Vertex { 0, 0, 0 });
+    REQUIRE(a.cross(b) == Vertex { 0, 0, 0 });
+    REQUIRE(a.cross(c) == Vertex { 0, 0, 1 });
+    REQUIRE(a.cross(d) == Vertex { 0, 0, -1 });
+    REQUIRE(a.cross(e) == Vertex { 0, -1, 0 });
+    REQUIRE(a.cross(f) == Vertex { 0, 1, 0 });
+    REQUIRE(a.cross(g) == Vertex { 0, 0, SIN_45 });
 }
 
 TEST_CASE("Vector angles")
 {
     Vertex a { 0, 1, 0 };
-    Vertex normal { 0, 0, 1};
-    REQUIRE(a.cross(Vertex { 1, 1, 0 }).dot(normal) < 0); // right
-    REQUIRE(a.cross(Vertex { -1, 1, 0 }).dot(normal) > 0); // left
-    REQUIRE(a.cross(Vertex { 1, -1, 0 }).dot(normal) < 0); // right
-    REQUIRE(a.cross(Vertex { -1, -1, 0 }).dot(normal) > 0); // left
+    Vertex normal { 0, 0, 1 };
+    REQUIRE(a.cross(Vertex { 1, 1, 0 }).dot(normal) < 0);  // right
+    REQUIRE(a.cross(Vertex { -1, 1, 0 }).dot(normal) > 0);  // left
+    REQUIRE(a.cross(Vertex { 1, -1, 0 }).dot(normal) < 0);  // right
+    REQUIRE(a.cross(Vertex { -1, -1, 0 }).dot(normal) > 0);  // left
 }

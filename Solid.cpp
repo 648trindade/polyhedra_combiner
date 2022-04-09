@@ -13,11 +13,9 @@ Solid::Solid(const std::string& name)
 }
 
 Solid::Solid(Solid&& other)
+    : name(other.name)
+    , faces(std::move(other.faces))
 {
-    this->name = other.name;
-    this->vertexes = std::move(other.vertexes);
-    this->edges = std::move(other.edges);
-    this->faces = std::move(other.faces);
 }
 
 Face& Solid::add_face()
@@ -26,46 +24,24 @@ Face& Solid::add_face()
     return this->faces.back();
 }
 
-const Vertex* Solid::add_vertex(const Vertex& vertex)
+Face& Solid::add_face(std::vector<Vertex>& vertices)
 {
-    auto [iterator, inserted] = this->vertexes.insert(vertex);
-    return &(*iterator);
+    this->faces.emplace_back(vertices);
+    return this->faces.back();
 }
 
-EdgeInfo Solid::add_edge(const Vertex* begin, const Vertex* end)
+Face& Solid::add_face(Face&& face)
 {
-    auto match = this->find_edge(begin, end);
-    if (match.first)
-    {
-        return match;
-    }
-    auto [iterator, inserted] = this->edges.insert(Edge{begin, end});
-    return std::make_pair(&(*iterator), true);
-}
-
-EdgeInfo Solid::find_edge(const Vertex* begin, const Vertex* end)
-{
-    Edge forward{begin, end};
-    auto match = this->edges.find(forward);
-    if (match != this->edges.end())
-    {
-        return std::make_pair(&(*match), true);
-    }
-    Edge backward{end, begin};
-    match = this->edges.find(backward);
-    if (match != this->edges.end())
-    {
-        return std::make_pair(&(*match), false);
-    }
-    return std::make_pair(nullptr, true);
+    this->faces.push_back(std::move(face));
+    return this->faces.back();
 }
 
 BoundingBox Solid::bounding_box() const
 {
-    BoundingBox box{};
-    for (auto& vertex : this->vertexes)
+    BoundingBox box {};
+    for (auto& face : this->faces)
     {
-        box.update(vertex);
+        box.merge(face.bounding_box());
     }
     return box;
 }
@@ -73,48 +49,54 @@ BoundingBox Solid::bounding_box() const
 void Solid::to_OBJ(const std::string filename) const
 {
     std::ofstream file(filename);
-    size_t center_offset = this->vertexes.size() + 1;
+    std::set<Vertex> vertices_set;
 
-    auto find_vertex_index = [&](const Vertex* v) -> size_t
+    auto find_vertex_index = [&](const Vertex& v) -> size_t
     {
-        auto it = this->vertexes.find(*v);
-        return std::distance(this->vertexes.begin(), it) + 1;
+        auto it = vertices_set.find(v);
+        return std::distance(vertices_set.begin(), it) + 1;
     };
 
     file << "o " << this->name << std::endl;
 
-    for (auto& vertex : this->vertexes)
+    for (auto& face : this->faces)
+    {
+        vertices_set.insert(face.vertices.begin(), face.vertices.end());
+    }
+    size_t center_offset = vertices_set.size();
+    for (auto& vertex : vertices_set)
     {
         file << "v " << vertex.x << " " << vertex.y << " " << vertex.z << std::endl;
     }
+
     for (auto& face : this->faces)
     {
-        for (auto& contour : face.contours)
+        for (auto& vertex : face.vertices)
         {
-            auto edge_info = contour.edges.begin();
-            if (contour.edges.size() == 3)
+            if (face.get_number_of_vertices() == 3)
             {
-                file << "f " << find_vertex_index(edge_info->first->start) << " "
-                     << find_vertex_index(std::next(edge_info, 1)->first->start) << " "
-                     << find_vertex_index(std::next(edge_info, 2)->first->start) << std::endl;
+                file << "f " << find_vertex_index(face.vertices[0]) << " "
+                     << find_vertex_index(face.vertices[1]) << " "
+                     << find_vertex_index(face.vertices[2]) << std::endl;
             }
-            else if (contour.edges.size() == 4)
+            else if (face.get_number_of_vertices() == 4)
             {
-                file << "f " << find_vertex_index(edge_info->first->start) << " "
-                     << find_vertex_index(std::next(edge_info, 1)->first->start) << " "
-                     << find_vertex_index(std::next(edge_info, 2)->first->start) << std::endl;
-                file << "f " << find_vertex_index(edge_info->first->start) << " "
-                     << find_vertex_index(std::next(edge_info, 2)->first->start) << " "
-                     << find_vertex_index(std::next(edge_info, 3)->first->start) << std::endl;
+                file << "f " << find_vertex_index(face.vertices[0]) << " "
+                     << find_vertex_index(face.vertices[1]) << " "
+                     << find_vertex_index(face.vertices[2]) << std::endl;
+                file << "f " << find_vertex_index(face.vertices[0]) << " "
+                     << find_vertex_index(face.vertices[2]) << " "
+                     << find_vertex_index(face.vertices[3]) << std::endl;
             }
             else
             {
-                Vertex center = contour.get_center();
+                Vertex center = face.get_center();
                 file << "v " << center.x << " " << center.y << " " << center.z << std::endl;
-                for (auto& [edge, forward] : contour.edges)
+                for (int i = 0; i < face.get_number_of_edges(); i++)
                 {
-                    file << "f " << find_vertex_index(edge->start) << " "
-                         << find_vertex_index(edge->end) << " " << center_offset << std::endl;
+                    const Edge edge = face.get_edge(i);
+                    file << "f " << find_vertex_index(edge.start) << " "
+                         << find_vertex_index(edge.end) << " " << center_offset << std::endl;
                 }
                 center_offset++;
             }

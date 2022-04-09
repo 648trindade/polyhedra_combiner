@@ -3,8 +3,6 @@
 #include <ostream>
 #include <vector>
 
-class Edge;
-
 /*!
  * A vertex specifies a point in space given by three coordinates. Its data structure contains a
  * triple of floating-point coordinates and a tolerance indicating their accuracy. In addition,
@@ -14,8 +12,6 @@ class Vertex
 {
 public:
     float x, y, z;
-
-//    std::vector<Edge*> edges;
 
     Vertex operator+(const Vertex& other) const;
     Vertex& operator+=(const Vertex& other);
@@ -46,10 +42,7 @@ public:
     Vertex normalize() const;
     Vertex rotate(const float rotation_matrix[3][3]) const;
 
-    static bool is_close(float a, float b);
     friend std::ostream& operator<<(std::ostream& stream, const Vertex& v);
-
-    using limits = std::numeric_limits<float>;
 };
 
 std::ostream& operator<< (std::ostream& stream, const Vertex& v);

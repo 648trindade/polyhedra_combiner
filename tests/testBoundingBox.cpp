@@ -1,4 +1,4 @@
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #define CATCH_CONFIG_CONSOLE_WIDTH 120
 #include <catch2/catch.hpp>
 
@@ -7,11 +7,8 @@
 TEST_CASE("Empty Bounding Box")
 {
     BoundingBox box {};
-    REQUIRE(
-        box.max
-        == Vertex { Vertex::limits::lowest(), Vertex::limits::lowest(), Vertex::limits::lowest() });
-    REQUIRE(
-        box.min == Vertex { Vertex::limits::max(), Vertex::limits::max(), Vertex::limits::max() });
+    REQUIRE(box.max == Vertex { numeric::lowest(), numeric::lowest(), numeric::lowest() });
+    REQUIRE(box.min == Vertex { numeric::max(), numeric::max(), numeric::max() });
 }
 
 TEST_CASE("Update Bounding Box")
@@ -33,7 +30,7 @@ TEST_CASE("Update Bounding Box")
 
 TEST_CASE("Bounding Box Sides and Volume")
 {
-    BoundingBox box{};
+    BoundingBox box {};
     box.update(Vertex { 0.5, 1.0, 1.5 });
     box.update(Vertex { -0.5, -1.0, -1.5 });
 
@@ -59,7 +56,7 @@ TEST_CASE("Merge Bounding Boxes")
 TEST_CASE("Overlap Boxes")
 {
     BoundingBox box_a {}, box_b {};
-    box_a.update(Vertex { 0, 0, Vertex::limits::epsilon() });
+    box_a.update(Vertex { 0, 0, numeric::epsilon() });
     box_a.update(Vertex { 1, 1, 1 });
     box_b.update(Vertex {});
     box_b.update(Vertex { -1, -1, -1 });
