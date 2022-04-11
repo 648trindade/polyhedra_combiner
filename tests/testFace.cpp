@@ -1,77 +1,51 @@
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #define CATCH_CONFIG_CONSOLE_WIDTH 120
 #include <catch2/catch.hpp>
 
-#include "../Face.h"
-
-#include <iostream>
-
-const Vertex vertexes[3] {{1, 0, 2}, {1, 1, 2}, {0, 1, 2}};
-const Edge edges[3] {{vertexes, vertexes + 1}, {vertexes + 1, vertexes + 2}, {vertexes + 2, vertexes}};
+#include "Face.h"
 
 Face create_face()
 {
-    Face face{};
-    Contour& contour = face.add_contour();
-    contour.add_edge(std::make_pair(&edges[0], true));
-    contour.add_edge(std::make_pair(&edges[1], true));
-    contour.add_edge(std::make_pair(&edges[2], true));
-    return face;
+    std::vector<Vertex> vertexes { { 0, 1, 2 }, { 1, 1, 2 }, { 1, 0, 2 } };
+    return { vertexes };
 }
 
 TEST_CASE("Face is instantiated correctly")
 {
-    Face face{};
-    REQUIRE(face.contours.empty());
+    Face face {};
+    REQUIRE(face.vertices.empty());
     REQUIRE(face.distance == 0);
-    REQUIRE(face.normal == Vertex{});
-}
-
-TEST_CASE("Add Contour")
-{
-    Face face{};
-    Contour& contour = face.add_contour();
-    REQUIRE(face.contours.size() == 1);
-    REQUIRE(&contour == face.contours.data());
-    REQUIRE(contour.edges.empty());
+    REQUIRE(face.normal == Vertex {});
 }
 
 TEST_CASE("Compute plane equation")
 {
     Face face = create_face();
     face.compute_plane_equation();
-    REQUIRE(face.normal == Vertex{0, 0, 1});
+    REQUIRE(face.normal == Vertex { 0, 0, -1 });
     REQUIRE(face.distance == 2);
 }
 
 TEST_CASE("Intersect faces - origin")
 {
-    const Vertex _vertexes[6] { { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 0 },
-                                { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
-    const Edge _edges[6] { { _vertexes, _vertexes + 1 },     { _vertexes + 1, _vertexes + 2 },
-                           { _vertexes + 2, _vertexes },     { _vertexes + 3, _vertexes + 4 },
-                           { _vertexes + 4, _vertexes + 5 }, { _vertexes + 5, _vertexes + 3 } };
-
+    const Vertex vertexes[6] { { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 0 },
+                               { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
     Face a {};
-    {
-        Contour& contour = a.add_contour();
-        contour.add_edge(std::make_pair(&_edges[0], true));
-        contour.add_edge(std::make_pair(&_edges[1], true));
-        contour.add_edge(std::make_pair(&_edges[2], true));
-        a.compute_plane_equation();
-        REQUIRE(a.normal == Vertex { 0, 1, 0 });
-        REQUIRE(a.distance == 0);
-    }
+    a.add_vertex(vertexes[0]);
+    a.add_vertex(vertexes[1]);
+    a.add_vertex(vertexes[2]);
+    a.compute_plane_equation();
+    REQUIRE(a.normal == Vertex { 0, 1, 0 });
+    REQUIRE(a.distance == 0);
+
     Face b {};
-    {
-        Contour& contour = b.add_contour();
-        contour.add_edge(std::make_pair(&_edges[3], true));
-        contour.add_edge(std::make_pair(&_edges[4], true));
-        contour.add_edge(std::make_pair(&_edges[5], true));
-        b.compute_plane_equation();
-        REQUIRE(b.normal == Vertex { 1, 0, 0 });
-        REQUIRE(b.distance == 0);
-    }
+    b.add_vertex(vertexes[3]);
+    b.add_vertex(vertexes[4]);
+    b.add_vertex(vertexes[5]);
+    b.compute_plane_equation();
+    REQUIRE(b.normal == Vertex { 1, 0, 0 });
+    REQUIRE(b.distance == 0);
+
     {
         auto [u, v] = a.intersect(b);
         REQUIRE(u.x == 0);
@@ -92,21 +66,20 @@ TEST_CASE("Intersect faces - origin")
 
 TEST_CASE("Intersect edge")
 {
-    Face face = create_face();
-    Vertex start {0.75, 0.75, 1};
-    Vertex end {0.75, 0.75, 3};
-    Edge edge { &start, &end };
-
-    face.compute_plane_equation();
+    Face face { create_face() };
+    Vertex start { 0.75, 0.75, 1 };
+    Vertex end { 0.75, 0.75, 3 };
     {
-        auto [intersect, point] = face.edge_plane_intersect(edge);
+        Edge edge { start, end };
+        auto [intersect, point] = face.intersect(edge);
         REQUIRE(intersect);
         REQUIRE(point == Vertex { 0.75, 0.75, 2 });
     }
     {
         start.y = 1;
         end.y = 0;
-        auto [intersect, point] = face.edge_plane_intersect(edge);
+        Edge edge { start, end };
+        auto [intersect, point] = face.intersect(edge);
         REQUIRE(intersect);
         REQUIRE(point.x == 0.75);
         REQUIRE(point.z == 2);
@@ -114,8 +87,40 @@ TEST_CASE("Intersect edge")
     }
     {
         end.z = 1.5;
-        auto [intersect, point] = face.edge_plane_intersect(edge);
+        Edge edge { start, end };
+        auto [intersect, point] = face.intersect(edge);
         REQUIRE_FALSE(intersect);
         REQUIRE(point == Vertex {});
     }
+}
+
+TEST_CASE("Intersect Point")
+{
+    Face face { create_face() };
+    REQUIRE(face.intersect(Vertex { 0.75, 0.75, 2 })); // inside
+    REQUIRE_FALSE(face.intersect(Vertex { 0, 0, 2 })); // origin
+    REQUIRE_FALSE(face.intersect(Vertex { 1 + numeric::epsilon(), 1, 2 })); // edge +
+    REQUIRE_FALSE(face.intersect(Vertex { 0 - numeric::epsilon(), 1, 2 })); // edge -
+    REQUIRE(face.intersect(Vertex { 0, 1, 2 })); // edge start
+    REQUIRE_FALSE(face.intersect(Vertex { 0.75, 0.75, 0 })); // below
+    REQUIRE_FALSE(face.intersect(Vertex { 0.75, 0.75, 3 })); // above
+}
+
+TEST_CASE("Face Split")
+{
+    Face face { create_face() };
+    Face backup = face;
+    Vertex a { (face.vertices[0] + face.vertices[1]) / 2 };
+    Vertex b { (face.vertices[1] + face.vertices[2]) / 2 };
+    Face new_face { face.split(0, a, 1, b) };
+    REQUIRE(face.get_number_of_vertices() == 4);
+    REQUIRE(face.vertices[0] == backup.vertices[0]);
+    REQUIRE(face.vertices[1] == a);
+    REQUIRE(face.vertices[2] == b);
+    REQUIRE(face.vertices[3] == backup.vertices[2]);
+    REQUIRE(new_face.get_number_of_vertices() == 3);
+    REQUIRE(new_face.vertices[0] == a);
+    REQUIRE(new_face.vertices[1] == backup.vertices[1]);
+    REQUIRE(new_face.vertices[2] == b);
+    REQUIRE_THROWS(backup.split(0, Vertex {}, 1, Vertex {}));
 }

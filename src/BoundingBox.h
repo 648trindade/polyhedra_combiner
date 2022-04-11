@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Vertex.h"
-
-#include <limits>
+#include "numeric.h"
 
 class BoundingBox
 {
 public:
-    Vertex min { Vertex::limits::max(), Vertex::limits::max(), Vertex::limits::max() };
-    Vertex max { Vertex::limits::lowest(), Vertex::limits::lowest(), Vertex::limits::lowest() };
+    Vertex min { numeric::max(), numeric::max(), numeric::max() };
+    Vertex max { numeric::lowest(), numeric::lowest(), numeric::lowest() };
 
     void update(const Vertex& vertex);
     bool overlap(const BoundingBox& other) const;

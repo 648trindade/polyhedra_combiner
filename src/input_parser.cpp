@@ -2,7 +2,7 @@
 
 #include "json.hpp"
 
-#include <OBJ_Loader.h>
+#include "OBJ_Loader.h"
 #include <fstream>
 
 std::vector<InputGeometry> read_input(const std::string& JSON_filename)
@@ -55,7 +55,7 @@ std::vector<InputGeometry> read_input(const std::string& JSON_filename)
         }
         if (entry.contains("quaternion"))
         {
-            auto json_quaternion = entry["center"];
+            auto json_quaternion = entry["quaternion"];
             const float q[4] = {
                 json_quaternion[0].get<float>(), // scalar
                 json_quaternion[1].get<float>(),
@@ -91,29 +91,24 @@ Solid setup_geometry(const InputGeometry& geometry_info)
     auto transform_vertex = [&geometry_info](Vertex& vertex)
     {
         vertex *= geometry_info.scale;
-        vertex.rotate(geometry_info.rotation_matrix);
+        vertex = vertex.rotate(geometry_info.rotation_matrix);
         vertex += geometry_info.center;
     };
 
     Solid solid {};
-    solid.name = geometry_info.path.stem();
+    solid.name = loader.LoadedMeshes[0].MeshName;
     for (size_t i = 0; i < loader.LoadedIndices.size(); i += 3)
     {
-        const Vertex* vertices[3];
-        Face& face = solid.add_face();
-        Contour& contour = face.add_contour();
+        std::vector<Vertex> vertices(3);
         for (int v = 0; v < 3; v++)
         {
-            int index = loader.LoadedIndices[i + v];
+            auto index = loader.LoadedIndices[i + v];
             auto& position = loader.LoadedVertices[index].Position;
             Vertex vertex { position.X, position.Y, position.Z };
             transform_vertex(vertex);
-            vertices[v] = solid.add_vertex(vertex);
+            vertices[v] = vertex;
         }
-        contour.add_edge(solid.add_edge(vertices[0], vertices[1]));
-        contour.add_edge(solid.add_edge(vertices[1], vertices[2]));
-        contour.add_edge(solid.add_edge(vertices[2], vertices[0]));
-        face.compute_plane_equation();
+        solid.add_face(vertices);
     }
     return solid;
 }

@@ -1,6 +1,6 @@
 #include "Vertex.h"
 
-#include "Edge.h"
+#include "numeric.h"
 
 #include <cmath>
 
@@ -56,21 +56,18 @@ Vertex& Vertex::operator/=(const Vertex& other)
     return *this;
 }
 
-bool Vertex::is_close(float a, float b)
-{
-    return std::fabs(a - b) < Vertex::limits::epsilon();
-}
-
 bool Vertex::operator<(const Vertex& other) const
 {
-    return (this->x < other.x)
-        || (is_close(this->x, other.x) && this->y < other.y)
-        || (is_close(this->x, other.x) && is_close(this->y, other.y) && this->z < other.z);
+    return (numeric::is_less(this->x, other.x))
+        || (numeric::is_close(this->x, other.x) && numeric::is_less(this->y, other.y))
+        || (numeric::is_close(this->x, other.x) && numeric::is_close(this->y, other.y)
+            && numeric::is_less(this->z, other.z));
 }
 
 bool Vertex::operator==(const Vertex& other) const
 {
-    return is_close(this->x, other.x) && is_close(this->y, other.y) && is_close(this->z, other.z);
+    return numeric::is_close(this->x, other.x) && numeric::is_close(this->y, other.y)
+        && numeric::is_close(this->z, other.z);
 }
 
 Vertex Vertex::operator-() const
@@ -140,6 +137,11 @@ float Vertex::dot(const Vertex& other) const
     return this->x * other.x + this->y * other.y + this->z * other.z;
 }
 
+float Vertex::abs_dot(const Vertex& other) const
+{
+    return std::fabs(this->dot(other));
+}
+
 Vertex Vertex::cross(const Vertex& other) const
 {
     return Vertex {
@@ -157,6 +159,11 @@ float Vertex::norm() const
 Vertex Vertex::normalize() const
 {
     return *this / this->norm();
+}
+
+Vertex Vertex::cross(const Vertex& other, const Vertex& another) const
+{
+    return (other - *this).cross(another - *this);
 }
 
 Vertex Vertex::rotate(const float (*rotation_matrix)[3]) const

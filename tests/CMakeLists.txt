@@ -15,6 +15,7 @@ foreach(file ${files})
         ${test_name}
         PRIVATE
             ${polyhedra_combiner_SOURCE_DIR}/include
+            ${polyhedra_combiner_SOURCE_DIR}/src
     )
     catch_discover_tests(${test_name})
 endforeach()

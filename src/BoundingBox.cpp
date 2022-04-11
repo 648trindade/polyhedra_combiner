@@ -12,12 +12,12 @@ void BoundingBox::update(const Vertex& vertex)
 
 bool BoundingBox::overlap(const BoundingBox& other) const
 {
-    return !((other.min.x > this->max.x)
-        || (other.max.x < this->min.x)
-        || (other.min.y > this->max.y)
-        || (other.max.y < this->min.y)
-        || (other.min.z > this->max.z)
-        || (other.max.z < this->min.z));
+    return !(numeric::is_great(other.min.x, this->max.x)
+        || numeric::is_less(other.max.x, this->min.x)
+        || numeric::is_great(other.min.y, this->max.y)
+        || numeric::is_less(other.max.y, this->min.y)
+        || numeric::is_great(other.min.z, this->max.z)
+        || numeric::is_less(other.max.z, this->min.z));
 }
 
 float BoundingBox::dx() const
@@ -42,9 +42,12 @@ float BoundingBox::volume() const
 
 bool BoundingBox::overlap(const Vertex& v) const
 {
-    return (this->min.x <= v.x && v.x <= this->max.x)
-        && (this->min.y <= v.y && v.y <= this->max.y)
-        && (this->min.z <= v.z && v.z <= this->max.z);
+    return numeric::is_less_or_close(this->min.x, v.x)
+        && numeric::is_less_or_close(v.x, this->max.x)
+        && numeric::is_less_or_close(this->min.y, v.y)
+        && numeric::is_less_or_close(v.y, this->max.y)
+        && numeric::is_less_or_close(this->min.z, v.z)
+        && numeric::is_less_or_close(v.z, this->max.z); 
 }
 
 BoundingBox BoundingBox::merge(const BoundingBox& other) const

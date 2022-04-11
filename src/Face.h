@@ -1,9 +1,7 @@
 #pragma once
 
 #include "BoundingBox.h"
-#include "Contour.h"
-
-#include <iterator>
+#include "Edge.h"
 
 /*!
  * A face specifies by one or more contours a set of finite two-dimensional patches in the same
@@ -22,18 +20,30 @@
 class Face
 {
 public:
-    std::vector<Contour> contours;
+    std::vector<Vertex> vertices;
     Vertex normal;
     float distance;
 
-    Contour& add_contour();
+    Face() = default;
+    Face(std::vector<Vertex>& vertices);
+    Face(Face& other);
+    Face(Face&& other);
+
+    void add_vertex(const Vertex& vertex);
+
     void compute_plane_equation();
     std::pair<Vertex, Vertex> intersect(const Face& other) const;
 
-    size_t get_number_of_vertexes() const;
-    const Vertex* get_vertex(size_t id);
+    size_t get_number_of_vertices() const;
+    size_t get_number_of_edges() const;
+    Edge get_edge(size_t id) const;
 
     BoundingBox bounding_box() const;
 
-    std::pair<bool, Vertex> edge_plane_intersect(const Edge& edge) const;
+    std::pair<bool, Vertex> intersect(const Edge& edge) const;
+    bool intersect(const Vertex& point) const;
+    Vertex get_center() const;
+    bool is_convex() const;
+
+    Face split(int first_edge, Vertex first_point, int second_edge, Vertex second_point);
 };

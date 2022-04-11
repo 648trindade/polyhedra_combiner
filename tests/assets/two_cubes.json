@@ -4,6 +4,7 @@
   },
   {
     "path": "tests/assets/cube.obj",
-    "center": [1, 0, 0]
+    "center": [1, 0, 0],
+    "quaternion": [ -0.87330464, 0, -0.48717451,  0]
   }
 ]

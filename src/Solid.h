@@ -13,14 +13,11 @@ public:
 
     std::string name;
     std::vector<Face> faces;
-    std::set<Vertex> vertexes;
-    std::set<Edge> edges;
 
     Face& add_face();
-    EdgeInfo find_edge(const Vertex* begin, const Vertex* end);
-    EdgeInfo add_edge(const Vertex* begin, const Vertex* end);
+    Face& add_face(std::vector<Vertex>& vertices);
+    Face& add_face(Face&& face);
 
-    const Vertex* add_vertex(const Vertex& vertex);
     BoundingBox bounding_box() const;
 
     void to_OBJ(const std::string filename) const;

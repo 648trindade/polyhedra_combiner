@@ -7,30 +7,28 @@ set(CMAKE_MODULE_PATH "${polyhedra_combiner_SOURCE_DIR}/cmake")
 
 add_library(
     polyhedra
-        Vertex.h
-        Vertex.cpp
-        Edge.cpp
-        Edge.h
-        Contour.cpp
-        Contour.h
-        Face.cpp
-        Face.h
-        Solid.cpp
-        Solid.h
-        BoundingBox.cpp
-        BoundingBox.h
-)
+        src/Vertex.h
+        src/Vertex.cpp
+        src/Edge.cpp
+        src/Edge.h
+        src/Face.cpp
+        src/Face.h
+        src/Solid.cpp
+        src/Solid.h
+        src/BoundingBox.cpp
+        src/BoundingBox.h
+        src/numeric.h)
 
 add_library(
     utils
-        input_parser.h
-        input_parser.cpp
-        intersection.cpp
-        intersection.h
+        src/input_parser.h
+        src/input_parser.cpp
+        src/intersection.cpp
+        src/intersection.h
 )
 target_include_directories(utils PRIVATE include)
 
-add_executable(polyhedra_combiner main.cpp)
+add_executable(polyhedra_combiner src/main.cpp)
 target_link_libraries(
     polyhedra_combiner
         utils
