@@ -23,7 +23,7 @@ TEST_CASE("Compute plane equation")
     Face face = create_face();
     face.compute_plane_equation();
     REQUIRE(face.normal == Vertex { 0, 0, -1 });
-    REQUIRE(face.distance == 2);
+    REQUIRE(face.distance == -2);
 }
 
 TEST_CASE("Intersect faces - origin")

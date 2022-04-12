@@ -46,6 +46,27 @@ BoundingBox Solid::bounding_box() const
     return box;
 }
 
+bool Solid::is_inside(const Face& other_face) const
+{
+    const BoundingBox box = this->bounding_box();
+    const Vertex center { (box.max + box.min) * 0.5 };
+    for (const Face& face : this->faces)
+    {
+        const Vertex face_center = face.get_center();
+        const Vertex center_to_face = face_center - center;
+        for (const Vertex& point : other_face.vertices)
+        {
+            const Vertex face_to_point = point - face_center;
+            const float dot = face_to_point.dot(center_to_face);
+            if (numeric::is_great(dot, 1))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void Solid::to_OBJ(const std::string filename) const
 {
     std::ofstream file(filename);

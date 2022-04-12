@@ -20,5 +20,7 @@ public:
 
     BoundingBox bounding_box() const;
 
+    bool is_inside(const Face& face) const;
+
     void to_OBJ(const std::string filename) const;
 };

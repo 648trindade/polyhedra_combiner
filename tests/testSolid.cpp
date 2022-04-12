@@ -59,6 +59,28 @@ TEST_CASE("Solid is instantiated correctly")
     REQUIRE(first_face.get_number_of_edges() == 2);
 }
 
+TEST_CASE("Face inside solid")
+{
+    Solid solid { create_solid() };
+    Face triangle {};
+    triangle.add_vertex({-0.1, 0, 0});
+    triangle.add_vertex({0.1, 0.1, 0});
+    triangle.add_vertex({0.1, -0.1, 0});
+    REQUIRE(solid.is_inside(triangle));
+
+    triangle.vertices[0] -= Vertex { -10, 0, 0 };
+    REQUIRE_FALSE(solid.is_inside(triangle));
+}
+
+TEST_CASE("Face from solid inside solid")
+{
+    Solid solid { create_solid() };
+    for (const Face& face : solid.faces)
+    {
+        REQUIRE(solid.is_inside(face));
+    }
+}
+
 TEST_CASE("Export to OBJ")
 {
     Solid solid { create_solid() };
