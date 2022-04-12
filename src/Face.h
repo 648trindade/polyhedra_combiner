@@ -41,9 +41,12 @@ public:
     BoundingBox bounding_box() const;
 
     std::pair<bool, Vertex> intersect(const Edge& edge) const;
+    std::pair<bool, Vertex> intersect_coplanar(
+        const Vertex& line_vector, const Vertex& line_point) const;
     bool intersect(const Vertex& point) const;
     Vertex get_center() const;
     bool is_convex() const;
 
     Face split(int first_edge, Vertex first_point, int second_edge, Vertex second_point);
+    Face split(const Vertex& line_vector, const Vertex& line_point);
 };

@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <set>
+#include <tuple>
 
 Face::Face(std::vector<Vertex>& vertices)
     : vertices(std::move(vertices))
@@ -99,6 +100,22 @@ std::pair<bool, Vertex> Face::intersect(const Edge& edge) const
     }
 }
 
+std::tuple<bool, Vertex, Vertex> Face::intersect_coplanar(
+    const Vertex& line_vector, const Vertex& line_point) const
+{
+    for (int i = 0; i < this->get_number_of_edges(); i++)
+    {
+        const Edge edge = this->get_edge(i);
+        const Vertex edge_normal = edge.get_normal();
+        if (numeric::is_close(edge_normal.abs_dot(line_vector), 1))
+        {
+            continue;
+        }
+
+    }
+    return std::make_tuple(false, Vertex {}, Vertex {});
+}
+
 bool Face::intersect(const Vertex& point) const
 {
     for (int i = 0; i < this->get_number_of_edges(); i++)
@@ -170,4 +187,16 @@ Face Face::split(int first_edge, Vertex first_point, int second_edge, Vertex sec
     this->vertices.insert(previous_vertex + 1, { first_point, second_point });
 
     return Face(removed);
+}
+
+Face Face::split(const Vertex& line_vector, const Vertex& line_point)
+{
+    const BoundingBox box = this->bounding_box();
+    const Vertex bounds { box.dx(), box.dy(), box.dz() };
+    const float diameter = bounds.norm() * 2;
+
+    bool intersect;
+    Vertex entry, exit;
+
+
 }

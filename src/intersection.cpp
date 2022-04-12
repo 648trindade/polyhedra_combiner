@@ -4,61 +4,93 @@
 
 void face_intersect(Face& home_face, Face& near_face);
 
-template <typename Object1, typename Object2>
-bool intersect(Object1& home_object, Object2& near_object)
+void intersect(Solid& home_solid, Solid& near_solid)
 {
-    if (!home_object.bounding_box().overlap(near_object.bounding_box()))
+    const BoundingBox home_box = home_solid.bounding_box();
+    const BoundingBox near_box = home_solid.bounding_box();
+    if (!home_box.overlap(near_box))
     {
+        return;
+    }
+
+    for (auto home_it = home_solid.faces.begin(); home_it != home_solid.faces.end(); home_it++)
+    {
+        Face& home_face = *home_it;
+        const BoundingBox home_face_box = home_face.bounding_box();
+        for (Face& near_face : near_solid.faces)
+        {
+            if (!home_face_box.overlap(near_face.bounding_box()))
+            {
+                continue;
+            }
+            if (home_face.are_coplanar(near_face))
+            {
+                continue; // TODO polygon clipper
+            }
+            else
+            {
+                face_intersect(home_face, near_face);
+            }
+        }
+    }
+}
+
+void face_intersect(
+    Face& home_face, Face& near_face, std::vector<Face>& home_faces, std::vector<Face>& near_faces)
+{
+//    using Intersection = std::tuple<bool, bool, int, Vertex>;
+//    std::vector<Intersection> intersections;
+
+    auto find_intersections = [/*&intersections*/](Face& face_a, Face& face_b, bool home) -> bool
+    {
+        for (int i = 0; i < face_a.get_number_of_edges(); i++)
+        {
+            const Edge edge_a = face_a.get_edge(i);
+            auto [edge_intersect, point] = face_b.intersect(edge_a);
+            if (edge_intersect && face_b.intersect(point))
+            {
+                return true;
+//                if (!intersections.empty())
+//                {
+//                    // keep just the lastest id
+//                    auto& [p_home, p_is_vertex, p_id, p_point] = intersections.back();
+//                    if (p_home == home && p_point == point)
+//                    {
+//                        p_is_vertex = true;
+//                        continue;
+//                    }
+//                }
+//                intersections.emplace_back(std::make_tuple(true, false, i, point));
+            }
+        }
         return false;
+    };
+    bool has_intersection = find_intersections(home_face, near_face, true);
+    if (!has_intersection && !find_intersections(near_face, home_face, false))
+    {
+        return;
     }
 
-    if constexpr (std::is_same<Object1, Solid>::value)
+    auto [u, v] = home_face.intersect(near_face);
+    auto split_face = [/*&intersections,*/ line_vector = u, line_point = v](
+                          bool home, Face& face, std::vector<Face>& faces)
     {
-        for (auto face = home_object.faces.begin(); face != home_object.faces.end(); face++)
-        {
-            intersect(*face, near_object);
-        }
-    }
-    else if constexpr (std::is_same<Object2, Solid>::value)
-    {
-        for (auto face = near_object.faces.begin(); face != near_object.faces.end(); face++)
-        {
-            intersect(home_object, *face);
-        }
-    }
-    else
-    {
-        intersect(home_object, near_object);
-    }
-    return true;
+//        size_t count = std::count_if(intersections.begin(), intersections.end(), [home](auto& in) {
+//            return std::get<0>(in) == home;
+//        });
+//        Vertex entry, exit;
+//        int entry_id, exit_id;
+//        if (count == 0)
+//        {
+//
+//        }
+        Face new_face = face.split(line_vector, line_point);
+    };
+    split_face(true, home_face, home_faces);
+    split_face(false, near_face, near_faces)
 }
 
-template<>
-bool intersect(Face& home_face, Face& near_face)
-{
-    using Intersection = std::tuple<int, Vertex>;
-    std::vector<Intersection> intersections;
-
-    for (int i = 0; i < home_face.get_number_of_edges(); i++)
-    {
-        const Edge home_edge = home_face.get_edge(i);
-        auto [edge_intersect, point] = near_face.intersect(home_edge);
-        if (edge_intersect && near_face.intersect(point))
-        {
-            intersections.emplace_back(std::make_tuple(i, point));
-        }
-    }
-    for (auto& [i, point] : intersections)
-    {
-        Edge edge = home_face.get_edge(i);
-        std::cout << "Edge " << edge.start << " " << edge.end << std::endl;
-        std::cout << "Point " << point << std::endl;
-        std::cout << "Plane " << near_face.normal << " " << near_face.distance << std::endl << std::endl;
-    }
-    return true;
-}
-
-void remove_intersect(std::vector<Solid>& solids)
+void intersect_solids(std::vector<Solid>& solids)
 {
     for (size_t i = 0; i < solids.size(); i++)
     {

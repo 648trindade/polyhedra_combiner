@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
         solids.emplace_back(setup_geometry(input_geometry));
     }
 
-    remove_intersect(solids);
+    intersect_solids(solids);
 
     return 0;
 }
