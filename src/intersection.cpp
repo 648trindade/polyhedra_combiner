@@ -23,14 +23,14 @@ void intersect(Solid& home_solid, Solid& near_solid)
             {
                 continue;
             }
-            if (home_face.are_coplanar(near_face))
-            {
-                continue; // TODO polygon clipper
-            }
-            else
-            {
-                face_intersect(home_face, near_face);
-            }
+//            if (home_face.are_coplanar(near_face))
+//            {
+//                continue; // TODO polygon clipper
+//            }
+//            else
+//            {
+//                face_intersect(home_face, near_face);
+//            }
         }
     }
 }
@@ -87,7 +87,7 @@ void face_intersect(
         Face new_face = face.split(line_vector, line_point);
     };
     split_face(true, home_face, home_faces);
-    split_face(false, near_face, near_faces)
+    split_face(false, near_face, near_faces);
 }
 
 void intersect_solids(std::vector<Solid>& solids)

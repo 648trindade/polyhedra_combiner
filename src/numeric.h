@@ -19,12 +19,12 @@ inline float lowest()
 
 inline float epsilon()
 {
-    return limits::epsilon();
+    return 1e-5f;
 }
 
 inline bool is_close(float a, float b)
 {
-    return std::fabs(a - b) < limits::epsilon();
+    return std::fabs(a - b) <= epsilon();
 }
 
 inline bool is_less_or_close(float a, float b)

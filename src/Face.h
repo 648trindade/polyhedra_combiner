@@ -41,7 +41,7 @@ public:
     BoundingBox bounding_box() const;
 
     std::pair<bool, Vertex> intersect(const Edge& edge) const;
-    std::pair<bool, Vertex> intersect_coplanar(
+    std::tuple<bool, Vertex, Vertex> intersect_coplanar(
         const Vertex& line_vector, const Vertex& line_point) const;
     bool intersect(const Vertex& point) const;
     Vertex get_center() const;
