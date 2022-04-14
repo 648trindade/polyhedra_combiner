@@ -26,7 +26,27 @@ TEST_CASE("Compute plane equation")
     REQUIRE(face.distance == -2);
 }
 
-TEST_CASE("Intersect faces - origin")
+TEST_CASE("Edges intersect other face")
+{
+    const Vertex vertexes[6] { { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 0 },
+                               { 0.1, -0.1, 0.1 }, { 0.1, 0.5, 0.1 }, { 0.1, -0.1, 0.5 } };
+    Face a {};
+    a.add_vertex(vertexes[0]);
+    a.add_vertex(vertexes[1]);
+    a.add_vertex(vertexes[2]);
+    a.compute_plane_equation();
+
+    Face b {};
+    b.add_vertex(vertexes[3]);
+    b.add_vertex(vertexes[4]);
+    b.add_vertex(vertexes[5]);
+    b.compute_plane_equation();
+
+    REQUIRE_FALSE(a.edges_intersect(b));
+    REQUIRE(b.edges_intersect(a));
+}
+
+TEST_CASE("Get intersection line")
 {
     const Vertex vertexes[6] { { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 0 },
                                { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
@@ -47,7 +67,7 @@ TEST_CASE("Intersect faces - origin")
     REQUIRE(b.distance == 0);
 
     {
-        auto [u, v] = a.intersect(b);
+        auto [u, v] = a.get_intersection_line(b);
         REQUIRE(u.x == 0);
         REQUIRE(u.y == 0);
         REQUIRE(std::fabs(u.z) == 1);
@@ -55,7 +75,7 @@ TEST_CASE("Intersect faces - origin")
         REQUIRE(v.y == 0);
     }
     {
-        auto [u, v] = b.intersect(a);
+        auto [u, v] = b.get_intersection_line(a);
         REQUIRE(u.x == 0);
         REQUIRE(u.y == 0);
         REQUIRE(std::fabs(u.z) == 1);
@@ -112,7 +132,8 @@ TEST_CASE("Face Split")
     Face backup = face;
     Vertex a { (face.vertices[0] + face.vertices[1]) / 2 };
     Vertex b { (face.vertices[1] + face.vertices[2]) / 2 };
-    Face new_face { face.split(0, a, 1, b) };
+
+    Face new_face { face.split(a, (b - a).normalize()) };
     REQUIRE(face.get_number_of_vertices() == 4);
     REQUIRE(face.vertices[0] == backup.vertices[0]);
     REQUIRE(face.vertices[1] == a);
@@ -122,5 +143,28 @@ TEST_CASE("Face Split")
     REQUIRE(new_face.vertices[0] == a);
     REQUIRE(new_face.vertices[1] == backup.vertices[1]);
     REQUIRE(new_face.vertices[2] == b);
-    REQUIRE_THROWS(backup.split(0, Vertex {}, 1, Vertex {}));
+
+    // line on edges
+    for (int i = 0; i < face.get_number_of_edges(); i++)
+    {
+        const Edge edge = face.get_edge(i);
+        Face other_face = face.split(edge.start, edge.get_normal());
+        REQUIRE(other_face.get_number_of_vertices() == 0);
+        REQUIRE(face.get_number_of_vertices() == 4);
+    }
+
+    // line on other plane
+    Face other_face = face.split(Vertex { 0, 0, 0 }, Vertex { 1, 0, 0 });
+    REQUIRE(other_face.get_number_of_vertices() == 0);
+    REQUIRE(face.get_number_of_vertices() == 4);
+}
+
+TEST_CASE("Faces are coplanar")
+{
+    REQUIRE(false);
+}
+
+TEST_CASE("Intersect coplanar face")
+{
+    REQUIRE(false);
 }

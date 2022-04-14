@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <set>
+#include <string>
 #include <tuple>
 
 Face::Face(std::vector<Vertex>& vertices)
@@ -40,7 +41,7 @@ void Face::compute_plane_equation()
     this->distance = this->normal.dot(a);
 }
 
-std::pair<Vertex, Vertex> Face::intersect(const Face& other) const
+std::pair<Vertex, Vertex> Face::get_intersection_line(const Face& other) const
 {
     const Vertex& n1 = this->normal;
     const Vertex& n2 = other.normal;
@@ -100,20 +101,25 @@ std::pair<bool, Vertex> Face::intersect(const Edge& edge) const
     }
 }
 
-std::tuple<bool, Vertex, Vertex> Face::intersect_coplanar(
-    const Vertex& line_vector, const Vertex& line_point) const
+bool Face::intersect_coplanar(const Face& other) const
 {
+    if (!this->is_coplanar(other))
+    {
+        return false;
+    }
     for (int i = 0; i < this->get_number_of_edges(); i++)
     {
         const Edge edge = this->get_edge(i);
-        const Vertex edge_normal = edge.get_normal();
-        if (numeric::is_close(edge_normal.abs_dot(line_vector), 1))
+        for (int j = 0; j < other.get_number_of_edges(); j++)
         {
-            continue;
+            const Edge other_edge = other.get_edge(j);
+            if (edge.intersect(other_edge).first)
+            {
+                return true;
+            }
         }
-
     }
-    return std::make_tuple(false, Vertex {}, Vertex {});
+    return false;
 }
 
 bool Face::intersect(const Vertex& point) const
@@ -163,40 +169,92 @@ bool Face::is_convex() const
     return this->intersect(this->get_center());
 }
 
-Face Face::split(int first_edge, Vertex first_point, int second_edge, Vertex second_point)
+Face Face::split(const Vertex& line_point, const Vertex& line_vector)
 {
-    auto aligned = [this](int edge, const Vertex& point) -> bool {
-        return numeric::is_close(
-            this->get_edge(edge).get_normal().dot((point - this->vertices[edge]).normalize()), 1);
-    };
-    if (!aligned(first_edge, first_point) || !aligned(second_edge, second_point))
-    {
-        throw std::runtime_error("Point outside edge on face split");
-    }
-
+    std::vector<Vertex> remaining;
     std::vector<Vertex> removed;
-    auto previous_vertex = this->vertices.begin() + first_edge;
-    auto first_vertex = previous_vertex + 1;
-    auto second_vertex = this->vertices.begin() + second_edge + 1;
-
-    removed.push_back(first_point);
-    removed.insert(removed.end(), first_vertex, second_vertex);
-    removed.push_back(second_point);
-
-    this->vertices.erase(first_vertex, second_vertex);
-    this->vertices.insert(previous_vertex + 1, { first_point, second_point });
-
-    return Face(removed);
+    int n_intersections = 0;
+    Vertex points[2] { {}, {} };
+    int edge_id[2] { -1, -1 };
+    bool cut_on_vertex[2] { false, false };
+    for (int i = 0; i < this->get_number_of_edges(); i++)
+    {
+        Edge edge = this->get_edge(i);
+        auto [intersect, point] = edge.intersect(line_point, line_vector);
+        if (intersect)
+        {
+            edge_id[n_intersections] = i;
+            points[n_intersections] = point;
+            cut_on_vertex[n_intersections] = (point == this->vertices[i]);
+            n_intersections++;
+        }
+    }
+    if (n_intersections == 0)
+    {
+        return Face {};
+    }
+    else if (n_intersections != 2)
+    {
+        throw std::runtime_error(
+            "Unexpected number of n_intersections: " + std::to_string(n_intersections));
+    }
+    const size_t next_id = (edge_id[0] + 1) % this->get_number_of_vertices();
+    const auto vertex_begin = this->vertices.begin();
+    const auto vertex_end = this->vertices.end();
+    const auto vertex_0_end = vertex_begin + edge_id[0] + 1;
+    const auto vertex_1_end = vertex_begin + edge_id[1] + 1;
+    if (cut_on_vertex[0] && cut_on_vertex[1] && (next_id == edge_id[1]))
+    {
+        return Face {};
+    }
+    remaining.assign(vertex_begin, vertex_0_end);
+    if (cut_on_vertex[0])
+    {
+        removed.push_back(this->vertices[edge_id[0]]);
+    }
+    else
+    {
+        remaining.push_back(points[0]);
+        removed.push_back(points[0]);
+    }
+    removed.insert(removed.end(), vertex_0_end, vertex_1_end);
+    if (cut_on_vertex[1])
+    {
+        remaining.push_back(this->vertices[edge_id[1]]);
+    }
+    else
+    {
+        remaining.push_back(points[1]);
+        removed.push_back(points[1]);
+    }
+    remaining.insert(remaining.end(), vertex_1_end, vertex_end);
+    this->vertices.swap(remaining);
+    return { removed };
 }
 
-Face Face::split(const Vertex& line_vector, const Vertex& line_point)
+bool Face::is_coplanar(const Face& other) const
 {
-    const BoundingBox box = this->bounding_box();
-    const Vertex bounds { box.dx(), box.dy(), box.dz() };
-    const float diameter = bounds.norm() * 2;
+    if (this->normal == other.normal)
+    {
+        return numeric::is_close(this->distance, other.distance);
+    }
+    else if (this->normal == -other.normal)
+    {
+        return numeric::is_close(this->distance, -other.distance);
+    }
+    return false;
+}
 
-    bool intersect;
-    Vertex entry, exit;
-
-
+bool Face::edges_intersect(const Face& other) const
+{
+    for (int i = 0; i < this->get_number_of_edges(); i++)
+    {
+        const Edge edge = this->get_edge(i);
+        auto [edge_intersect, point] = other.intersect(edge);
+        if (edge_intersect && other.intersect(point))
+        {
+            return true;
+        }
+    }
+    return false;
 }

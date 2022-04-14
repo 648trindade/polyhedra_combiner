@@ -14,6 +14,9 @@ public:
     std::string name;
     std::vector<Face> faces;
 
+    std::set<int> discarded_faces;
+    std::vector<Face*> external_faces;
+
     Face& add_face();
     Face& add_face(std::vector<Vertex>& vertices);
     Face& add_face(Face&& face);

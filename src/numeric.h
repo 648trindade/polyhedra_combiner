@@ -24,7 +24,7 @@ inline float epsilon()
 
 inline bool is_close(float a, float b)
 {
-    return std::fabs(a - b) <= epsilon();
+    return std::fabs(a - b) < epsilon();
 }
 
 inline bool is_less_or_close(float a, float b)

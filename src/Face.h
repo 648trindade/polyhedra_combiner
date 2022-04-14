@@ -30,23 +30,23 @@ public:
     Face(Face&& other);
 
     void add_vertex(const Vertex& vertex);
-
     void compute_plane_equation();
-    std::pair<Vertex, Vertex> intersect(const Face& other) const;
+    BoundingBox bounding_box() const;
 
     size_t get_number_of_vertices() const;
     size_t get_number_of_edges() const;
+
     Edge get_edge(size_t id) const;
 
-    BoundingBox bounding_box() const;
-
+    bool edges_intersect(const Face& other) const;
+    bool intersect_coplanar(const Face& other) const;
+    std::pair<Vertex, Vertex> get_intersection_line(const Face& other) const;
     std::pair<bool, Vertex> intersect(const Edge& edge) const;
-    std::tuple<bool, Vertex, Vertex> intersect_coplanar(
-        const Vertex& line_vector, const Vertex& line_point) const;
     bool intersect(const Vertex& point) const;
+
     Vertex get_center() const;
     bool is_convex() const;
 
-    Face split(int first_edge, Vertex first_point, int second_edge, Vertex second_point);
-    Face split(const Vertex& line_vector, const Vertex& line_point);
+    bool is_coplanar(const Face& other) const;
+    Face split(const Vertex& line_point, const Vertex& line_vector);
 };
