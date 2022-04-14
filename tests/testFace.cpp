@@ -161,10 +161,50 @@ TEST_CASE("Face Split")
 
 TEST_CASE("Faces are coplanar")
 {
-    REQUIRE(false);
+    const Vertex vertexes[6] { { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 0 },
+                               { 1, 0, 1 }, { 0, 0, 1 }, { 1, 0, 0 } };
+    Face a {};
+    a.add_vertex(vertexes[0]);
+    a.add_vertex(vertexes[1]);
+    a.add_vertex(vertexes[2]);
+    a.compute_plane_equation();
+
+    Face b {};
+    b.add_vertex(vertexes[3]);
+    b.add_vertex(vertexes[4]);
+    b.add_vertex(vertexes[5]);
+    b.compute_plane_equation();
+
+    REQUIRE(a.is_coplanar(b));
+    REQUIRE(b.is_coplanar(a));
+
+    b.vertices[0].y += 1;
+    b.compute_plane_equation();
+    REQUIRE_FALSE(a.is_coplanar(b));
+    REQUIRE_FALSE(b.is_coplanar(a));
 }
 
 TEST_CASE("Intersect coplanar face")
 {
-    REQUIRE(false);
+    const Vertex vertexes[6] { { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 0 },
+                               { 0, 0, 0 }, { 0, 0, 1 }, { 1, 0, 1 } };
+    Face a {};
+    a.add_vertex(vertexes[0]);
+    a.add_vertex(vertexes[1]);
+    a.add_vertex(vertexes[2]);
+    a.compute_plane_equation();
+
+    Face b {};
+    b.add_vertex(vertexes[3]);
+    b.add_vertex(vertexes[4]);
+    b.add_vertex(vertexes[5]);
+    b.compute_plane_equation();
+
+    REQUIRE(a.intersect_coplanar(b));
+    REQUIRE(b.intersect_coplanar(a));
+
+    b.vertices[0].y += 1;
+    b.compute_plane_equation();
+    REQUIRE_FALSE(a.intersect_coplanar(b));
+    REQUIRE_FALSE(b.intersect_coplanar(a));
 }

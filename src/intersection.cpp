@@ -1,5 +1,4 @@
 #include "intersection.h"
-#include <iostream>
 #include <tuple>
 
 std::tuple<bool, Face, Face> face_intersect(Face& home_face, Face& near_face);
@@ -17,8 +16,10 @@ void intersect(Solid& home_solid, Solid& near_solid)
     {
         Face& home_face = *home_it;
         const BoundingBox home_face_box = home_face.bounding_box();
-        for (Face& near_face : near_solid.faces)
+        const size_t n_near_faces = near_solid.faces.size();
+        for (size_t i = 0; i < n_near_faces; i++)
         {
+            Face& near_face = near_solid.faces[i];
             if (!home_face_box.overlap(near_face.bounding_box()))
             {
                 continue;
