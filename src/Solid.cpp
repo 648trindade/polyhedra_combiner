@@ -24,7 +24,7 @@ Face& Solid::add_face()
     return this->faces.back();
 }
 
-Face& Solid::add_face(std::vector<Vertex>& vertices)
+Face& Solid::add_face(std::vector<Vertex>&& vertices)
 {
     this->faces.emplace_back(vertices);
     return this->faces.back();
@@ -41,7 +41,7 @@ BoundingBox Solid::bounding_box() const
     BoundingBox box {};
     for (auto& face : this->faces)
     {
-        box.merge(face.bounding_box());
+        box = box.merge(face.bounding_box());
     }
     return box;
 }
@@ -94,35 +94,46 @@ void Solid::to_OBJ(const std::string filename) const
     {
         for (auto& vertex : face.vertices)
         {
-            if (face.get_number_of_vertices() == 3)
+            file << "f";
+            for (auto& v : face.vertices)
             {
-                file << "f " << find_vertex_index(face.vertices[0]) << " "
-                     << find_vertex_index(face.vertices[1]) << " "
-                     << find_vertex_index(face.vertices[2]) << std::endl;
+                file << " " << find_vertex_index(v);
             }
-            else if (face.get_number_of_vertices() == 4)
-            {
-                file << "f " << find_vertex_index(face.vertices[0]) << " "
-                     << find_vertex_index(face.vertices[1]) << " "
-                     << find_vertex_index(face.vertices[2]) << std::endl;
-                file << "f " << find_vertex_index(face.vertices[0]) << " "
-                     << find_vertex_index(face.vertices[2]) << " "
-                     << find_vertex_index(face.vertices[3]) << std::endl;
-            }
-            else
-            {
-                Vertex center = face.get_center();
-                file << "v " << center.x << " " << center.y << " " << center.z << std::endl;
-                for (int i = 0; i < face.get_number_of_edges(); i++)
-                {
-                    const Edge edge = face.get_edge(i);
-                    file << "f " << find_vertex_index(edge.start) << " "
-                         << find_vertex_index(edge.end) << " " << center_offset << std::endl;
-                }
-                center_offset++;
-            }
+            file << std::endl;
+//            if (face.get_number_of_vertices() == 3)
+//            {
+//                file << "f " << find_vertex_index(face.vertices[0]) << " "
+//                     << find_vertex_index(face.vertices[1]) << " "
+//                     << find_vertex_index(face.vertices[2]) << std::endl;
+//            }
+//            else if (face.get_number_of_vertices() == 4)
+//            {
+//                file << "f " << find_vertex_index(face.vertices[0]) << " "
+//                     << find_vertex_index(face.vertices[1]) << " "
+//                     << find_vertex_index(face.vertices[2]) << std::endl;
+//                file << "f " << find_vertex_index(face.vertices[0]) << " "
+//                     << find_vertex_index(face.vertices[2]) << " "
+//                     << find_vertex_index(face.vertices[3]) << std::endl;
+//            }
+//            else
+//            {
+//                Vertex center = face.get_center();
+//                file << "v " << center.x << " " << center.y << " " << center.z << std::endl;
+//                for (int i = 0; i < face.get_number_of_edges(); i++)
+//                {
+//                    const Edge edge = face.get_edge(i);
+//                    file << "f " << find_vertex_index(edge.start) << " "
+//                         << find_vertex_index(edge.end) << " " << center_offset << std::endl;
+//                }
+//                center_offset++;
+//            }
         }
     }
 
     file.close();
+}
+
+void Solid::add_external_face(Face* face)
+{
+    this->external_faces.emplace_back(face);
 }

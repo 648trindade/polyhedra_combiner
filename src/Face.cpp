@@ -9,6 +9,14 @@
 
 Face::Face(std::vector<Vertex>& vertices)
     : vertices(std::move(vertices))
+    , enabled(true)
+{
+    this->compute_plane_equation();
+}
+
+Face::Face(std::vector<Vertex>&& vertices)
+    : vertices(std::move(vertices))
+    , enabled(true)
 {
     this->compute_plane_equation();
 }
@@ -17,6 +25,7 @@ Face::Face(Face& other)
     : vertices(other.vertices)
     , normal(other.normal)
     , distance(other.distance)
+    , enabled(other.enabled)
 {
 }
 
@@ -24,6 +33,7 @@ Face::Face(Face&& other)
     : vertices(std::move(other.vertices))
     , normal(other.normal)
     , distance(other.distance)
+    , enabled(other.enabled)
 {
 }
 
@@ -171,8 +181,8 @@ bool Face::is_convex() const
 
 Face Face::split(const Vertex& line_point, const Vertex& line_vector)
 {
-    std::vector<Vertex> remaining;
-    std::vector<Vertex> removed;
+    std::vector<Vertex> remaining {};
+    std::vector<Vertex> removed {};
     int n_intersections = 0;
     Vertex points[2] { {}, {} };
     int edge_id[2] { -1, -1 };
@@ -189,15 +199,15 @@ Face Face::split(const Vertex& line_point, const Vertex& line_vector)
             n_intersections++;
         }
     }
-    if (n_intersections == 0)
+    if (n_intersections < 2)
     {
         return Face {};
     }
-    else if (n_intersections != 2)
-    {
-        throw std::runtime_error(
-            "Unexpected number of n_intersections: " + std::to_string(n_intersections));
-    }
+//    else if (n_intersections != 2)
+//    {
+//        throw std::runtime_error(
+//            "Unexpected number of n_intersections: " + std::to_string(n_intersections));
+//    }
     const size_t next_id = (edge_id[0] + 1) % this->get_number_of_vertices();
     const auto vertex_begin = this->vertices.begin();
     const auto vertex_end = this->vertices.end();

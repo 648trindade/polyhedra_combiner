@@ -20,12 +20,14 @@
 class Face
 {
 public:
-    std::vector<Vertex> vertices;
+    std::vector<Vertex> vertices {};
     Vertex normal;
     float distance;
+    bool enabled { true };
 
     Face() = default;
     Face(std::vector<Vertex>& vertices);
+    Face(std::vector<Vertex>&& vertices);
     Face(Face& other);
     Face(Face&& other);
 
