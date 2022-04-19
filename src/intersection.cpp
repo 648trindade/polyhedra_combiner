@@ -10,14 +10,16 @@ void intersect(Solid& home_solid, Solid& near_solid)
         return;
     }
 
-    for (size_t hf = 0; hf < home_solid.faces.size(); hf++)
+    std::vector<size_t> last_near_face(home_solid.faces.size(), 0);
+    for (size_t home_face_id = 0; home_face_id < home_solid.faces.size(); home_face_id++)
     {
-        const BoundingBox home_face_box = home_solid.faces[hf].bounding_box();
+        const BoundingBox home_face_box = home_solid.faces[home_face_id].bounding_box();
+        const size_t first_near_face = last_near_face[home_face_id];
         const size_t n_near_faces = near_solid.faces.size();
-        for (size_t i = 0; i < n_near_faces; i++)
+        for (size_t near_face_id = first_near_face; near_face_id < n_near_faces; near_face_id++)
         {
-            Face& home_face = home_solid.faces[hf];
-            Face& near_face = near_solid.faces[i];
+            Face& home_face = home_solid.faces[home_face_id];
+            Face& near_face = near_solid.faces[near_face_id];
             if (!home_face_box.overlap(near_face.bounding_box()))
             {
                 continue;
@@ -38,7 +40,8 @@ void intersect(Solid& home_solid, Solid& near_solid)
                     if (new_home_face.get_number_of_vertices() > 0)
                     {
                         home_solid.faces.emplace_back(std::move(new_home_face));
-                        home_solid.to_OBJ("/tmp/a_" + std::to_string(hf) + "_" + std::to_string(i) + ".obj");
+                        last_near_face.push_back(near_face_id);
+                        home_solid.to_OBJ("/tmp/a_" + std::to_string(home_face_id) + "_" + std::to_string(near_face_id) + ".obj");
                     }
                     if (new_near_face.get_number_of_vertices() > 0)
                     {

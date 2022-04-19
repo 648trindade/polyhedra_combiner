@@ -208,3 +208,31 @@ TEST_CASE("Intersect coplanar face")
     REQUIRE_FALSE(a.intersect_coplanar(b));
     REQUIRE_FALSE(b.intersect_coplanar(a));
 }
+
+TEST_CASE("Get intersection line - Precision bug #01")
+{
+    const Vertex vertexes[6] { { 0, 0, 0 }, { 1/3.f, 1, 1/3.f }, { 1, 0, 0 },
+                               { 0, 1, 0 }, { 0, 1, 1 }, { 1, 1, 0 } };
+    Face a {};
+    a.add_vertex(vertexes[0]);
+    a.add_vertex(vertexes[1]);
+    a.add_vertex(vertexes[2]);
+    a.compute_plane_equation();
+
+    Face b {};
+    b.add_vertex(vertexes[3]);
+    b.add_vertex(vertexes[4]);
+    b.add_vertex(vertexes[5]);
+    b.compute_plane_equation();
+
+    {
+        auto [u, v] = a.get_intersection_line(b);
+        REQUIRE(u == Vertex { 1, 0, 0 });
+        REQUIRE(v == Vertex { 0, 1, 1/3.f});
+    }
+    {
+        auto [u, v] = b.get_intersection_line(a);
+        REQUIRE(u == Vertex { -1, 0, 0 });
+        REQUIRE(v == Vertex { 0, 1, 1/3.f});
+    }
+}

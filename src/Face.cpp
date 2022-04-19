@@ -55,10 +55,10 @@ std::pair<Vertex, Vertex> Face::get_intersection_line(const Face& other) const
 {
     const Vertex& n1 = this->normal;
     const Vertex& n2 = other.normal;
-    const Vertex u = n1.cross(n2).normalize();
+    const Vertex u = n1.cross(n2);
     // (u x n2 * d1) + (n1 x u * d2) / det
     const Vertex v = ((u.cross(n2) * -this->distance) + (n1.cross(u) * -other.distance)) / u.dot();
-    return std::make_pair(u, v);
+    return std::make_pair(u.normalize(), v);
 }
 
 size_t Face::get_number_of_vertices() const
